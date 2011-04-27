@@ -1,0 +1,10 @@
+Twisted bindings for ZeroMQ
+===========================
+
+txZMQ allows to integrate easily ZeroMQ sockets into Twisted event loop (reactor). 
+
+Requirements:
+
+* ZeroMQ library >= 2.1 (heavily tested with 2.1.4)
+* pyzmq
+* Twisted
