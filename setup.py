@@ -9,6 +9,6 @@ setup(
         author_email='me@smira.ru',
         url='http://pypi.python.org/pypi/txZMQ',
         description='Twisted bindings for ZeroMQ',
-        long_description=open('README').read(),
+        long_description=open('README.rst').read(),
         install_requires=["Twisted>=10.0", "pyzmq>=2.1"],
         )
