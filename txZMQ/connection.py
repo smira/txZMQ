@@ -32,7 +32,7 @@ class ZmqConnection(object):
     @type allowLoopbackMulticast: C{boolean}
     @cvar multicastRate: maximum allowed multicast rate, kbps
     @type multicastRate: C{int}
-    @cvar highWaterMark: hard limit on the maximum number of outstanding messages 
+    @cvar highWaterMark: hard limit on the maximum number of outstanding messages
         0MQ shall queue in memory for any single peer
     @type highWaterMark: C{int}
 

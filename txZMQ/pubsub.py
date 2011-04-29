@@ -2,7 +2,6 @@
 ZeroMQ PUB-SUB wrappers.
 """
 
-from twisted.python import log
 from zmq.core import constants
 
 from txZMQ.connection import ZmqConnection
@@ -71,4 +70,3 @@ class ZmqSubConnection(ZmqConnection):
         @param tag: message tag
         """
         raise NotImplementedError(self)
-

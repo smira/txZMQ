@@ -59,7 +59,7 @@ class ZmqConnectionTestCase(unittest.TestCase):
                 lambda _: self.failUnlessEqual(getattr(r, 'messages', []), [['abcd']], "Message should have been received"))
 
     def test_send_recv_tcp(self):
-        r = ZmqTestReceiver(self.factory,  ZmqEndpoint(ZmqEndpointType.Bind, "tcp://127.0.0.1:5555"))
+        r = ZmqTestReceiver(self.factory, ZmqEndpoint(ZmqEndpointType.Bind, "tcp://127.0.0.1:5555"))
         s = ZmqTestSender(self.factory, ZmqEndpoint(ZmqEndpointType.Connect, "tcp://127.0.0.1:5555"))
 
         for i in xrange(100):
@@ -69,7 +69,7 @@ class ZmqConnectionTestCase(unittest.TestCase):
                 lambda _: self.failUnlessEqual(getattr(r, 'messages', []), map(lambda i: [str(i)], xrange(100)), "Messages should have been received"))
 
     def test_send_recv_tcp_large(self):
-        r = ZmqTestReceiver(self.factory,  ZmqEndpoint(ZmqEndpointType.Bind, "tcp://127.0.0.1:5555"))
+        r = ZmqTestReceiver(self.factory, ZmqEndpoint(ZmqEndpointType.Bind, "tcp://127.0.0.1:5555"))
         s = ZmqTestSender(self.factory, ZmqEndpoint(ZmqEndpointType.Connect, "tcp://127.0.0.1:5555"))
 
         s.send(["0" * 10000, "1" * 10000])
