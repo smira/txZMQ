@@ -32,10 +32,6 @@ Example::
     from optparse import OptionParser
 
     from twisted.internet import reactor, defer
-    from twisted.python import log
-
-    observer = log.FileLogObserver(sys.stderr)
-    log.addObserver(observer.emit)
 
     parser = OptionParser("")
     parser.add_option("-m", "--method", dest="method", help="0MQ socket connection: bind|connect")
@@ -72,5 +68,30 @@ Example::
 
         s.gotMessage = doPrint
 
-
     reactor.run()
+
+The same example is available in source code::
+
+    examples/pub_sub.py --method=bind --endpoint=ipc:///tmp/sock --mode=publisher
+
+    examples/pub_sub.py --method=connect --endpoint=ipc:///tmp/sock --mode=subscriber
+
+Hacking
+-------
+
+Source code for txZMQ is available at `github <https://github.com/smira/txZMQ>`_,
+forks and pull requests are welcome.
+
+To start hacking, please install ``virtualenv`` and ``pip``.  In fresh checkout,
+run::
+
+    make env
+
+(If your ``virtualenv`` binary has different name, you can specify it via
+``make`` variables: ``make env VIRTUALENV=virtualenv-2.7``)
+
+This should make new virtual environment at ``env/`` and install txZMQ and development requirements.
+
+Run tests and style checks::
+
+    make
