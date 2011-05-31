@@ -1,4 +1,3 @@
-pyzmq
 Twisted
 pyflakes
 pep8

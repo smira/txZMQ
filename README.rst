@@ -4,13 +4,16 @@ Twisted bindings for ZeroMQ
 txZMQ allows to integrate easily `ZeroMQ <http://zeromq.org>`_ sockets into
 Twisted event loop (reactor).
 
+Supports CPython and PyPy.
+
 Requirements:
 
 * ZeroMQ library >= 2.1 (heavily tested with 2.1.4)
 
 Python packages required:
 
-* pyzmq
+* pyzmq (for CPython)
+* pyzmq-ctypes (for PyPy)
 * Twisted
 
 txZMQ introduces support for general ZeroMQ sockets by class ``ZmqConnection``
