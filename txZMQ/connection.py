@@ -8,6 +8,7 @@ from zmq.core.socket import Socket
 from zmq.core import constants, error
 
 from zope.interface import implements
+from twisted.internet import reactor
 from twisted.internet.interfaces import IReadDescriptor, IFileDescriptor
 from twisted.python import log
 
@@ -53,6 +54,7 @@ class ZmqConnection(object):
     allowLoopbackMulticast = False
     multicastRate = 100
     highWaterMark = 0
+    identity = None
 
     def __init__(self, factory, *endpoints):
         """
@@ -68,12 +70,16 @@ class ZmqConnection(object):
         self.socket = Socket(factory.context, self.socketType)
         self.queue = deque()
         self.recv_parts = []
+        self.disconnected = 0
+        self._queued_read = None
 
         self.fd = self.socket.getsockopt(constants.FD)
         self.socket.setsockopt(constants.LINGER, factory.lingerPeriod)
         self.socket.setsockopt(constants.MCAST_LOOP, int(self.allowLoopbackMulticast))
         self.socket.setsockopt(constants.RATE, self.multicastRate)
         self.socket.setsockopt(constants.HWM, self.highWaterMark)
+        if self.identity is not None:
+            self.socket.setsockopt(constants.IDENTITY, self.identity)
 
         self._connectOrBind()
 
@@ -86,6 +92,8 @@ class ZmqConnection(object):
         Shutdown connection and socket.
         """
         self.factory.reactor.removeReader(self)
+        if self._queued_read and self._queued_read.active():
+            self._queued_read.cancel()
 
         self.factory.connections.discard(self)
 
@@ -93,6 +101,7 @@ class ZmqConnection(object):
         self.socket = None
 
         self.factory = None
+        self.disconnected = 1
 
     def __repr__(self):
         return "%s(%r, %r)" % (self.__class__.__name__, self.factory, self.endpoints)
@@ -123,7 +132,10 @@ class ZmqConnection(object):
                        failure may be of other classes as well.
         """
         log.err(reason, "Connection to ZeroMQ lost in %r" % (self))
-        self.factory.reactor.removeReader(self)
+        if self.factory:
+            self.factory.reactor.removeReader(self)
+        if self._queued_read and self._queued_read.active():
+            self._queued_read.cancel()
 
     def _readMultipart(self):
         """
@@ -148,6 +160,8 @@ class ZmqConnection(object):
         events = self.socket.getsockopt(constants.EVENTS)
         if (events & constants.POLLIN) == constants.POLLIN:
             while True:
+                if self.disconnected:
+                    return
                 try:
                     message = self._readMultipart()
                 except error.ZMQError as e:
@@ -172,7 +186,6 @@ class ZmqConnection(object):
                     break
                 self.queue.popleft()
                 raise e
-
             self.queue.popleft()
 
     def logPrefix(self):
@@ -197,6 +210,9 @@ class ZmqConnection(object):
             self.queue.append((0, message[-1]))
 
         self._startWriting()
+        # we might have missed an event, queue a read
+        if self._queued_read is None or self._queued_read.called:
+            self._queued_read = reactor.callLater(0, self.doRead)
 
     def messageReceived(self, message):
         """
