@@ -44,7 +44,8 @@ class ZmqXREQConnection(ZmqConnection):
         @param message: message data
         """
         msg_id, _, msg = message[0], message[1], message[2:]
-        self._requests[msg_id].callback(msg)
+        d = self._requests.pop(msg_id)
+        d.callback(msg)
 
 
 class ZmqXREPConnection(ZmqConnection):

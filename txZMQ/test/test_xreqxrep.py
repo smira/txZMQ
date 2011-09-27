@@ -1,8 +1,6 @@
 """
 Tests for L{txZMQ.xreq_xrep}.
 """
-import uuid
-
 from twisted.trial import unittest
 from twisted.internet import defer
 
@@ -69,4 +67,8 @@ class ZmqConnectionTestCase(unittest.TestCase):
             deferreds.append(d)
         return defer.DeferredList(deferreds)
 
-
+    @defer.inlineCallbacks
+    def test_cleanup_requests(self):
+        """The request dict is cleanedup properly."""
+        yield self.s.sendMsg('aaa')
+        self.assertEqual(self.s._requests, {})
