@@ -23,10 +23,10 @@ non-blocking manner, scatter-gather for multipart messages.
 Special descendants of that class, ``ZmqPubConnection`` and ``ZmqSubConnection``
 add special nice features for PUB/SUB sockets.
 
-Other socket types could be easily derived from ``ZmqConnection`` except for 
-REQ/REP sockets that may require more work, as reply should be send immediately
-upon receiving message (currently ``ZmqConnection`` will try to read all available
-message and write queued messages in parallel).
+Request/reply pattern is achieved via XREQ/XREP sockets and classes ``ZmqXREQConnection``, 
+``ZmqXREPConection`` (by verterok).
+
+Other socket types could be easily derived from ``ZmqConnection``.
 
 Example::
 
