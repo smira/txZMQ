@@ -53,6 +53,7 @@ class ZmqConnection(object):
     allowLoopbackMulticast = False
     multicastRate = 100
     highWaterMark = 0
+    identity = None
 
     def __init__(self, factory, *endpoints):
         """
@@ -74,6 +75,8 @@ class ZmqConnection(object):
         self.socket.setsockopt(constants.MCAST_LOOP, int(self.allowLoopbackMulticast))
         self.socket.setsockopt(constants.RATE, self.multicastRate)
         self.socket.setsockopt(constants.HWM, self.highWaterMark)
+        if self.identity is not None:
+            self.socket.setsockopt(constants.IDENTITY, self.identity)
 
         self._connectOrBind()
 
@@ -123,7 +126,8 @@ class ZmqConnection(object):
                        failure may be of other classes as well.
         """
         log.err(reason, "Connection to ZeroMQ lost in %r" % (self))
-        self.factory.reactor.removeReader(self)
+        if self.factory:
+            self.factory.reactor.removeReader(self)
 
     def _readMultipart(self):
         """
@@ -148,6 +152,8 @@ class ZmqConnection(object):
         events = self.socket.getsockopt(constants.EVENTS)
         if (events & constants.POLLIN) == constants.POLLIN:
             while True:
+                if self.factory is None:  # disconnected
+                    return
                 try:
                     message = self._readMultipart()
                 except error.ZMQError as e:
@@ -172,7 +178,6 @@ class ZmqConnection(object):
                     break
                 self.queue.popleft()
                 raise e
-
             self.queue.popleft()
 
     def logPrefix(self):
@@ -195,6 +200,10 @@ class ZmqConnection(object):
         else:
             self.queue.extend([(constants.SNDMORE, m) for m in message[:-1]])
             self.queue.append((0, message[-1]))
+
+        # this is crazy hack: if we make such call, zeromq happily signals available events
+        # on other connections
+        self.socket.getsockopt(constants.EVENTS)
 
         self._startWriting()
 
