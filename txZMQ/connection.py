@@ -136,7 +136,7 @@ class ZmqConnection(object):
         """
         while True:
             self.recv_parts.append(self.socket.recv(constants.NOBLOCK))
-            if not self.socket.rcvmore:
+            if not self.socket.getsockopt(constants.RCVMORE):
                 result, self.recv_parts = self.recv_parts, []
 
                 return result
