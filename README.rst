@@ -1,12 +1,15 @@
 Twisted bindings for 0MQ
 ========================
 
+.. contents::
+
+Introduction
+------------
+
 txZMQ allows to integrate easily `0MQ <http://zeromq.org>`_ sockets into
 Twisted event loop (reactor).
 
-Supports CPython and PyPy.
-
-.. contents::
+txZMQ supports both CPython and PyPy.
 
 
 Requirements
