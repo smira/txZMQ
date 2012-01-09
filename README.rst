@@ -110,9 +110,9 @@ pyflakes), you will want to have ``virtualenv`` installed (it includes a
 Create a branch, add some unit tests, write your code, check it and test it!
 Some useful make targets are:
 
- * ``make env``
- * ``make check``
- * ``make test``
+* ``make env``
+* ``make check``
+* ``make test``
 
 If you don't have an environment set up, a new one will be created for you in
 ``./env``. Additionally, txZMQ will be installed as well as required
