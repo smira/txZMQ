@@ -1,16 +1,18 @@
-Twisted bindings for ZeroMQ
-===========================
+Twisted bindings for 0MQ
+========================
 
-txZMQ allows to integrate easily `ZeroMQ <http://zeromq.org>`_ sockets into
+txZMQ allows to integrate easily `0MQ <http://zeromq.org>`_ sockets into
 Twisted event loop (reactor).
 
 Supports CPython and PyPy.
+
+.. contents::
 
 
 Requirements
 ------------
 
-* ZeroMQ library >= 2.1 (heavily tested with 2.1.4)
+* 0MQ library >= 2.1 (heavily tested with 2.1.4)
 
 Python packages required:
 
@@ -22,7 +24,7 @@ Python packages required:
 Details
 -------
 
-txZMQ introduces support for general ZeroMQ sockets by class ``ZmqConnection``
+txZMQ introduces support for general 0MQ sockets by class ``ZmqConnection``
 that can do basic event loop integration, sending-receiving messages in
 non-blocking manner, scatter-gather for multipart messages.
 
@@ -30,7 +32,7 @@ txZMQ uses ØMQ APIs to get file descriptor that is used to signal pending
 actions from ØMQ library IO thread running in separate thread. This is used in
 a custom file descriptor reader, which is then added to the Twisted reactor.
 
-From this class, one may implement the various patterns defined by ZeroMQ. For
+From this class, one may implement the various patterns defined by 0MQ. For
 example, special descendants of the ``ZmqConnection`` class,
 ``ZmqPubConnection`` and ``ZmqSubConnection``, add special nice features for
 PUB/SUB sockets.
@@ -99,7 +101,7 @@ checkout directory with the following commands (in two different terminals)::
 Hacking
 -------
 
-Source code for txZMQ is available at `github <https://github.com/smira/txZMQ>`_,
+Source code for txZMQ is available at `github <https://github.com/smira/txZMQ>`_;
 forks and pull requests are welcome.
 
 To start hacking, fork at github and clone to your working directory. To use
