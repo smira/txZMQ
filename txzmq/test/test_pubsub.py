@@ -1,11 +1,10 @@
 """
 Tests for L{txzmq.pubsub}.
 """
-
 from twisted.trial import unittest
 
+from txzmq.connection import ZmqEndpoint, ZmqEndpointType
 from txzmq.factory import ZmqFactory
-from txzmq.connection import ZmqEndpointType, ZmqEndpoint
 from txzmq.pubsub import ZmqPubConnection, ZmqSubConnection
 from txzmq.test import _wait
 
@@ -32,36 +31,63 @@ class ZmqConnectionTestCase(unittest.TestCase):
         self.factory.shutdown()
 
     def test_send_recv(self):
-        r = ZmqTestSubConnection(self.factory, ZmqEndpoint(ZmqEndpointType.Bind, "ipc://test-sock"))
-        s = ZmqPubConnection(self.factory, ZmqEndpoint(ZmqEndpointType.Connect, "ipc://test-sock"))
+        r = ZmqTestSubConnection(
+            self.factory, ZmqEndpoint(ZmqEndpointType.Bind, "ipc://test-sock"))
+        s = ZmqPubConnection(
+            self.factory, ZmqEndpoint(ZmqEndpointType.Connect,
+            "ipc://test-sock"))
 
         r.subscribe('tag')
         s.publish('xyz', 'different-tag')
         s.publish('abcd', 'tag1')
         s.publish('efgh', 'tag2')
 
-        return _wait(0.01).addCallback(
-                lambda _: self.failUnlessEqual(getattr(r, 'messages', []), [['tag1', 'abcd'], ['tag2', 'efgh']], "Message should have been received"))
+        def check(ignore):
+            result = getattr(r, 'messages', [])
+            expected = [['tag1', 'abcd'], ['tag2', 'efgh']]
+            self.failUnlessEqual(
+                result, expected, "Message should have been received")
+
+        return _wait(0.01).addCallback(check)
 
     def test_send_recv_pgm(self):
-        r = ZmqTestSubConnection(self.factory, ZmqEndpoint(ZmqEndpointType.Bind, "epgm://127.0.0.1;239.192.1.1:5556"))
-        s = ZmqPubConnection(self.factory, ZmqEndpoint(ZmqEndpointType.Connect, "epgm://127.0.0.1;239.192.1.1:5556"))
+        r = ZmqTestSubConnection(self.factory, ZmqEndpoint(
+            ZmqEndpointType.Bind, "epgm://127.0.0.1;239.192.1.1:5556"))
+        s = ZmqPubConnection(self.factory, ZmqEndpoint(
+            ZmqEndpointType.Connect, "epgm://127.0.0.1;239.192.1.1:5556"))
 
         r.subscribe('tag')
         s.publish('xyz', 'different-tag')
         s.publish('abcd', 'tag1')
 
-        return _wait(0.2).addCallback(
-                lambda _: self.failUnlessEqual(getattr(r, 'messages', []), [['tag1', 'abcd']], "Message should have been received"))
+        def check(ignore):
+            result = getattr(r, 'messages', [])
+            expected = [['tag1', 'abcd']]
+            self.failUnlessEqual(
+                result, expected, "Message should have been received")
+
+        return _wait(0.2).addCallback(check)
 
     def test_send_recv_multiple_endpoints(self):
-        r = ZmqTestSubConnection(self.factory, ZmqEndpoint(ZmqEndpointType.Bind, "tcp://127.0.0.1:5556"), ZmqEndpoint(ZmqEndpointType.Bind, "inproc://endpoint"))
-        s1 = ZmqPubConnection(self.factory, ZmqEndpoint(ZmqEndpointType.Connect, "tcp://127.0.0.1:5556"))
-        s2 = ZmqPubConnection(self.factory, ZmqEndpoint(ZmqEndpointType.Connect, "inproc://endpoint"))
+        r = ZmqTestSubConnection(
+            self.factory,
+            ZmqEndpoint(ZmqEndpointType.Bind, "tcp://127.0.0.1:5556"),
+            ZmqEndpoint(ZmqEndpointType.Bind, "inproc://endpoint"))
+        s1 = ZmqPubConnection(
+            self.factory,
+            ZmqEndpoint(ZmqEndpointType.Connect, "tcp://127.0.0.1:5556"))
+        s2 = ZmqPubConnection(
+            self.factory,
+            ZmqEndpoint(ZmqEndpointType.Connect, "inproc://endpoint"))
 
         r.subscribe('')
         s1.publish('111', 'tag1')
         s2.publish('222', 'tag2')
 
-        return _wait(0.2).addCallback(
-                lambda _: self.failUnlessEqual(getattr(r, 'messages', []), [['tag2', '222'], ['tag1', '111']], "Message should have been received"))
+        def check(ignore):
+            result = getattr(r, 'messages', [])
+            expected = [['tag2', '222'], ['tag1', '111']]
+            self.failUnlessEqual(
+                result, expected, "Message should have been received")
+
+        return _wait(0.2).addCallback(check)
