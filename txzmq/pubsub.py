@@ -4,7 +4,7 @@ ZeroMQ PUB-SUB wrappers.
 
 from zmq.core import constants
 
-from txZMQ.connection import ZmqConnection
+from txzmq.connection import ZmqConnection
 
 
 class ZmqPubConnection(ZmqConnection):

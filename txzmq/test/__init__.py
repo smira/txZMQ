@@ -1,5 +1,5 @@
 """
-Tests for L{txZMQ}.
+Tests for L{txzmq}.
 """
 
 from twisted.internet import defer, reactor

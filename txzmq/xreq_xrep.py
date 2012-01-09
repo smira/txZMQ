@@ -5,7 +5,7 @@ ZeroMQ PUB-SUB wrappers.
 from twisted.internet import defer
 from zmq.core import constants
 
-from txZMQ.connection import ZmqConnection
+from txzmq.connection import ZmqConnection
 
 
 class ZmqXREQConnection(ZmqConnection):

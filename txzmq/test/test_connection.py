@@ -1,14 +1,14 @@
 """
-Tests for L{txZMQ.connection}.
+Tests for L{txzmq.connection}.
 """
 
 from twisted.trial import unittest
 from twisted.internet.interfaces import IReadDescriptor, IFileDescriptor
 from zope.interface import verify as ziv
 
-from txZMQ.factory import ZmqFactory
-from txZMQ.connection import ZmqConnection, ZmqEndpoint, ZmqEndpointType
-from txZMQ.test import _wait
+from txzmq.factory import ZmqFactory
+from txzmq.connection import ZmqConnection, ZmqEndpoint, ZmqEndpointType
+from txzmq.test import _wait
 from zmq.core import constants
 
 

@@ -45,7 +45,7 @@ Example::
 
     (options, args) = parser.parse_args()
 
-    from txZMQ import ZmqFactory, ZmqEndpoint, ZmqPubConnection, ZmqSubConnection
+    from txzmq import ZmqFactory, ZmqEndpoint, ZmqPubConnection, ZmqSubConnection
     import time
 
     zf = ZmqFactory()

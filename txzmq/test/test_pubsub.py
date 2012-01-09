@@ -1,13 +1,13 @@
 """
-Tests for L{txZMQ.pubsub}.
+Tests for L{txzmq.pubsub}.
 """
 
 from twisted.trial import unittest
 
-from txZMQ.factory import ZmqFactory
-from txZMQ.connection import ZmqEndpointType, ZmqEndpoint
-from txZMQ.pubsub import ZmqPubConnection, ZmqSubConnection
-from txZMQ.test import _wait
+from txzmq.factory import ZmqFactory
+from txzmq.connection import ZmqEndpointType, ZmqEndpoint
+from txzmq.pubsub import ZmqPubConnection, ZmqSubConnection
+from txzmq.test import _wait
 
 
 class ZmqTestSubConnection(ZmqSubConnection):
