@@ -15,6 +15,8 @@ txZMQ supports both CPython and PyPy.
 Requirements
 ------------
 
+Non-Python library required:
+
 * 0MQ library >= 2.1 (heavily tested with 2.1.4)
 
 Python packages required:
