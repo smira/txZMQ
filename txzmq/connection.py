@@ -16,8 +16,8 @@ class ZmqEndpointType(object):
     """
     Endpoint could be "bound" or "connected".
     """
-    Bind = "bind"
-    Connect = "connect"
+    bind = "bind"
+    connect = "connect"
 
 
 ZmqEndpoint = namedtuple('ZmqEndpoint', ['type', 'address'])
@@ -223,9 +223,9 @@ class ZmqConnection(object):
         Connect and/or bind socket to endpoints.
         """
         for endpoint in self.endpoints:
-            if endpoint.type == ZmqEndpointType.Connect:
+            if endpoint.type == ZmqEndpointType.connect:
                 self.socket.connect(endpoint.address)
-            elif endpoint.type == ZmqEndpointType.Bind:
+            elif endpoint.type == ZmqEndpointType.bind:
                 self.socket.bind(endpoint.address)
             else:
                 assert False, "Unknown endpoint type %r" % endpoint

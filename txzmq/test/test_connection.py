@@ -44,22 +44,22 @@ class ZmqConnectionTestCase(unittest.TestCase):
 
     def test_init(self):
         ZmqTestReceiver(
-            self.factory, ZmqEndpoint(ZmqEndpointType.Bind, "inproc://#1"))
+            self.factory, ZmqEndpoint(ZmqEndpointType.bind, "inproc://#1"))
         ZmqTestSender(
-            self.factory, ZmqEndpoint(ZmqEndpointType.Connect, "inproc://#1"))
+            self.factory, ZmqEndpoint(ZmqEndpointType.connect, "inproc://#1"))
 
     def test_repr(self):
         expected = ("ZmqTestReceiver(ZmqFactory(), "
                     "(ZmqEndpoint(type='bind', address='inproc://#1'),))")
         result = ZmqTestReceiver(
-            self.factory, ZmqEndpoint(ZmqEndpointType.Bind, "inproc://#1"))
+            self.factory, ZmqEndpoint(ZmqEndpointType.bind, "inproc://#1"))
         self.failUnlessEqual(expected, repr(result))
 
     def test_send_recv(self):
         r = ZmqTestReceiver(
-            self.factory, ZmqEndpoint(ZmqEndpointType.Bind, "inproc://#1"))
+            self.factory, ZmqEndpoint(ZmqEndpointType.bind, "inproc://#1"))
         s = ZmqTestSender(
-            self.factory, ZmqEndpoint(ZmqEndpointType.Connect, "inproc://#1"))
+            self.factory, ZmqEndpoint(ZmqEndpointType.connect, "inproc://#1"))
 
         s.send('abcd')
 
@@ -73,10 +73,10 @@ class ZmqConnectionTestCase(unittest.TestCase):
 
     def test_send_recv_tcp(self):
         r = ZmqTestReceiver(
-            self.factory, ZmqEndpoint(ZmqEndpointType.Bind,
+            self.factory, ZmqEndpoint(ZmqEndpointType.bind,
             "tcp://127.0.0.1:5555"))
         s = ZmqTestSender(
-            self.factory, ZmqEndpoint(ZmqEndpointType.Connect,
+            self.factory, ZmqEndpoint(ZmqEndpointType.connect,
             "tcp://127.0.0.1:5555"))
 
         for i in xrange(100):
@@ -92,10 +92,10 @@ class ZmqConnectionTestCase(unittest.TestCase):
 
     def test_send_recv_tcp_large(self):
         r = ZmqTestReceiver(
-            self.factory, ZmqEndpoint(ZmqEndpointType.Bind,
+            self.factory, ZmqEndpoint(ZmqEndpointType.bind,
             "tcp://127.0.0.1:5555"))
         s = ZmqTestSender(
-            self.factory, ZmqEndpoint(ZmqEndpointType.Connect,
+            self.factory, ZmqEndpoint(ZmqEndpointType.connect,
             "tcp://127.0.0.1:5555"))
 
         s.send(["0" * 10000, "1" * 10000])
