@@ -1,13 +1,13 @@
 """
 Tests for L{txzmq.xreq_xrep}.
 """
-from twisted.trial import unittest
 from twisted.internet import defer
+from twisted.trial import unittest
 
+from txzmq.connection import ZmqEndpoint, ZmqEndpointType
 from txzmq.factory import ZmqFactory
-from txzmq.connection import ZmqEndpointType, ZmqEndpoint
-from txzmq.xreq_xrep import ZmqXREQConnection, ZmqXREPConnection
 from txzmq.test import _wait
+from txzmq.xreq_xrep import ZmqXREPConnection, ZmqXREQConnection
 
 
 class ZmqTestXREPConnection(ZmqXREPConnection):
@@ -48,9 +48,13 @@ class ZmqConnectionTestCase(unittest.TestCase):
         self.s.sendMsg('aaa', 'aab')
         self.s.sendMsg('bbb')
 
-        return _wait(0.01).addCallback(
-                lambda _: self.failUnlessEqual(getattr(self.r, 'messages', []),
-                    [['msg_id_1', ('aaa', 'aab')], ['msg_id_2', ('bbb',)]], "Message should have been received"))
+        def check(ignore):
+            result = getattr(self.r, 'messages', [])
+            expected = [['msg_id_1', ('aaa', 'aab')], ['msg_id_2', ('bbb',)]]
+            self.failUnlessEqual(
+                result, expected, "Message should have been received")
+
+        return _wait(0.01).addCallback(check)
 
     def test_send_recv_reply(self):
         d = self.s.sendMsg('aaa')
@@ -76,4 +80,7 @@ class ZmqConnectionTestCase(unittest.TestCase):
 
     def xtest_cleanup_requests(self):
         """The request dict is cleanedup properly."""
-        return self.s.sendMsg('aaa').addCallback(lambda _: self.assertEqual(self.s._requests, {}))
+        def check(ignore):
+            self.assertEqual(self.s._requests, {})
+
+        return self.s.sendMsg('aaa').addCallback(check)

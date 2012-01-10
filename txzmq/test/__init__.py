@@ -1,7 +1,6 @@
 """
 Tests for L{txzmq}.
 """
-
 from twisted.internet import defer, reactor
 
 

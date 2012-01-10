@@ -7,34 +7,27 @@ Example txZMQ client.
 
     examples/pub_sub.py --method=connect --endpoint=ipc:///tmp/sock --mode=subscriber
 """
-
-import sys
 import os
-import os.path
-
+import sys
+import time
 from optparse import OptionParser
+
+from twisted.internet import reactor, defer
 
 rootdir = os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), '..'))
 sys.path.append(rootdir)
 os.chdir(rootdir)
 
-import sys
+from txzmq import ZmqEndpoint, ZmqFactory, ZmqPubConnection, ZmqSubConnection
 
-from optparse import OptionParser
-
-from twisted.internet import reactor, defer
 
 parser = OptionParser("")
 parser.add_option("-m", "--method", dest="method", help="0MQ socket connection: bind|connect")
 parser.add_option("-e", "--endpoint", dest="endpoint", help="0MQ Endpoint")
 parser.add_option("-M", "--mode", dest="mode", help="Mode: publisher|subscriber")
-
 parser.set_defaults(method="connect", endpoint="epgm://eth1;239.0.5.3:10011")
 
 (options, args) = parser.parse_args()
-
-from txzmq import ZmqFactory, ZmqEndpoint, ZmqPubConnection, ZmqSubConnection
-import time
 
 zf = ZmqFactory()
 e = ZmqEndpoint(options.method, options.endpoint)
@@ -59,6 +52,4 @@ else:
 
     s.gotMessage = doPrint
 
-
 reactor.run()
-
