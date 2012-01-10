@@ -10,10 +10,10 @@ env:
 	rm -f .runtime_cfg
 
 check:
-	env/bin/pep8 --repeat --ignore=E501 txZMQ
-	env/bin/pyflakes txZMQ
+	env/bin/pep8 --repeat --ignore=E501 txzmq
+	env/bin/pyflakes txzmq
 
 test:
-	env/bin/trial txZMQ
+	env/bin/trial txzmq
 
 .PHONY: env check test

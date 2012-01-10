@@ -1,13 +1,13 @@
 """
-Tests for L{txZMQ.xreq_xrep}.
+Tests for L{txzmq.xreq_xrep}.
 """
 from twisted.trial import unittest
 from twisted.internet import defer
 
-from txZMQ.factory import ZmqFactory
-from txZMQ.connection import ZmqEndpointType, ZmqEndpoint
-from txZMQ.xreq_xrep import ZmqXREQConnection, ZmqXREPConnection
-from txZMQ.test import _wait
+from txzmq.factory import ZmqFactory
+from txzmq.connection import ZmqEndpointType, ZmqEndpoint
+from txzmq.xreq_xrep import ZmqXREQConnection, ZmqXREPConnection
+from txzmq.test import _wait
 
 
 class ZmqTestXREPConnection(ZmqXREPConnection):

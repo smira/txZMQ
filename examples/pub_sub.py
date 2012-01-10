@@ -33,7 +33,7 @@ parser.set_defaults(method="connect", endpoint="epgm://eth1;239.0.5.3:10011")
 
 (options, args) = parser.parse_args()
 
-from txZMQ import ZmqFactory, ZmqEndpoint, ZmqPubConnection, ZmqSubConnection
+from txzmq import ZmqFactory, ZmqEndpoint, ZmqPubConnection, ZmqSubConnection
 import time
 
 zf = ZmqFactory()
