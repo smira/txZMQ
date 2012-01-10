@@ -29,9 +29,9 @@ class ZmqConnectionTestCase(unittest.TestCase):
         self.factory = ZmqFactory()
         ZmqXREQConnection.identity = 'client'
         self.r = ZmqTestXREPConnection(self.factory,
-                ZmqEndpoint(ZmqEndpointType.Bind, "ipc://#3"))
+                ZmqEndpoint(ZmqEndpointType.bind, "ipc://#3"))
         self.s = ZmqXREQConnection(self.factory,
-                ZmqEndpoint(ZmqEndpointType.Connect, "ipc://#3"))
+                ZmqEndpoint(ZmqEndpointType.connect, "ipc://#3"))
         self.count = 0
 
         def get_next_id():
