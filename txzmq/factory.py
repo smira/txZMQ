@@ -1,7 +1,6 @@
 """
 ZeroMQ Twisted factory which is controlling ZeroMQ context.
 """
-
 from zmq.core.context import Context
 
 from twisted.internet import reactor
@@ -16,8 +15,8 @@ class ZmqFactory(object):
     @cvar reactor: reference to Twisted reactor used by all the connections
     @cvar ioThreads: number of IO threads ZeroMQ will be using for this context
     @type ioThreads: C{int}
-    @cvar: lingerPeriod: number of milliseconds to block when closing socket (terminating context),
-        when there are some messages pending to be sent
+    @cvar: lingerPeriod: number of milliseconds to block when closing socket
+        (terminating context), when there are some messages pending to be sent
     @type lingerPeriod: C{int}
 
     @ivar connections: set of instanciated L{ZmqConnection}s

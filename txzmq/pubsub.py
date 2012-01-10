@@ -1,7 +1,6 @@
 """
 ZeroMQ PUB-SUB wrappers.
 """
-
 from zmq.core import constants
 
 from txzmq.connection import ZmqConnection

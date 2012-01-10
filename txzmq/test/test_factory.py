@@ -1,7 +1,6 @@
 """
 Tests for L{txzmq.factory}.
 """
-
 from twisted.trial import unittest
 
 from txzmq.factory import ZmqFactory
