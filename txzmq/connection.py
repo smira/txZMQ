@@ -47,6 +47,10 @@ class ZmqConnection(object):
     @type fd: C{int}
     @ivar queue: output message queue
     @type queue: C{deque}
+    @ivar isConnected: True if the connect() method called without error
+    @type isConnected: C{lbool}
+    @ivar isListening: True if the listen() method called without error
+    @type isListening: C{lbool}
     """
     implements(IReadDescriptor, IFileDescriptor)
 
@@ -60,8 +64,6 @@ class ZmqConnection(object):
         """
         Constructor.
 
-        @param factory: ZeroMQ Twisted factory
-        @type factory: L{ZmqFactory}
         @param endpoints: ZeroMQ addresses for connect/bind
         @type endpoints: C{list} of L{ZmqEndpoint}
         """
@@ -111,12 +113,18 @@ class ZmqConnection(object):
         self.factory = factory
 
     def connect(self, factory):
+        """
+        What clients do.
+        """
         self._connectOrBind(factory)
         # XXX after examining use cases, we can determine what we would like
         # this deferred to return
         return defer.succeed(True)
 
     def listen(self, factory):
+        """
+        What servers do. This is Twisted-speak for "bind."
+        """
         self._connectOrBind(factory)
         # XXX after examining use cases, we can determine what we would like
         # this deferred to return
