@@ -117,18 +117,14 @@ class ZmqConnection(object):
         What clients do.
         """
         self._connectOrBind(factory)
-        # XXX after examining use cases, we can determine what we would like
-        # this deferred to return
-        return defer.succeed(True)
+        return defer.succeed(self)
 
     def listen(self, factory):
         """
         What servers do. This is Twisted-speak for "bind."
         """
         self._connectOrBind(factory)
-        # XXX after examining use cases, we can determine what we would like
-        # this deferred to return
-        return defer.succeed(True)
+        return defer.succeed(self)
 
     def shutdown(self):
         """

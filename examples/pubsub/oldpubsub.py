@@ -26,24 +26,27 @@ from txzmq import ZmqEndpoint, ZmqFactory, ZmqPubConnection, ZmqSubConnection
 
 (options, args) = base.getOptionsAndArgs()
 
+
 def publish(server):
     data = str(time.time())
     print "publishing %r" % data
     server.publish(data)
     reactor.callLater(1, publish, server)
 
-def doPrint(*args):
-    print "message received: %r" % (args, )
 
-zf = ZmqFactory()
-e = ZmqEndpoint(options.method, options.endpoint)
+class MySubscriber(ZmqSubConnection):
+
+    def gotMessage(self, message, tag):
+        print "message received: %s (%s)" % (message, tag)
+
+
+endpoint = ZmqEndpoint(options.method, options.endpoint)
 if options.mode == "publisher":
-    server = ZmqPubConnection(e)
-    server.listen(zf)
+    server = ZmqPubConnection(endpoint)
+    server.listen(ZmqFactory())
     publish(server)
 elif options.mode == "subscriber":
-    client = ZmqSubConnection(e)
-    client.connect(zf)
+    client = MySubscriber(endpoint)
+    client.connect(ZmqFactory())
     client.subscribe("")
-    client.gotMessage = doPrint
 reactor.run()
