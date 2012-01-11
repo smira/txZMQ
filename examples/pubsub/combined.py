@@ -3,9 +3,9 @@
 """
 Example txZMQ client.
 
-    examples/pubsub/oldpubsub.py --method=bind --endpoint=ipc:///tmp/sock --mode=publisher
+    examples/pubsub/combined.py --method=bind --endpoint=ipc:///tmp/sock --mode=publisher
 
-    examples/pubsub/oldpubsub.py --method=connect --endpoint=ipc:///tmp/sock --mode=subscriber
+    examples/pubsub/combined.py --method=connect --endpoint=ipc:///tmp/sock --mode=subscriber
 """
 import os
 import sys
