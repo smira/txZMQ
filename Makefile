@@ -3,9 +3,11 @@ VIRTUALENV?=virtualenv
 all: test check
 
 clean:
-	rm -rf env/
 	find ./ -name "*.pyc" -exec rm {} \;
 	find ./ -name "*.pyo" -exec rm {} \;
+
+clean-env: clean
+	rm -rf env/
 
 env:
 	$(VIRTUALENV) --no-site-packages env/
@@ -13,7 +15,7 @@ env:
 	env/bin/pip install -r requirements`cat .runtime_cfg`.txt -r requirements.txt
 	rm -f .runtime_cfg
 
-env-clean: clean env
+env-clean: clean-env env
 
 check: env
 	env/bin/pep8 --repeat --ignore=E501 txzmq
