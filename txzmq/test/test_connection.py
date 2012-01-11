@@ -43,23 +43,27 @@ class ZmqConnectionTestCase(unittest.TestCase):
         ziv.verifyClass(IFileDescriptor, ZmqConnection)
 
     def test_init(self):
-        ZmqTestReceiver(
+        receiver = ZmqTestReceiver(
             self.factory, ZmqEndpoint(ZmqEndpointType.bind, "inproc://#1"))
-        ZmqTestSender(
+        sender = ZmqTestSender(
             self.factory, ZmqEndpoint(ZmqEndpointType.connect, "inproc://#1"))
+        # XXX perform some actual checks here
 
     def test_repr(self):
         expected = ("ZmqTestReceiver(ZmqFactory(), "
                     "(ZmqEndpoint(type='bind', address='inproc://#1'),))")
-        result = ZmqTestReceiver(
-            self.factory, ZmqEndpoint(ZmqEndpointType.bind, "inproc://#1"))
-        self.failUnlessEqual(expected, repr(result))
+        r = ZmqTestReceiver(
+            ZmqEndpoint(ZmqEndpointType.bind, "inproc://#1"))
+        r.connect(self.factory)
+        self.failUnlessEqual(expected, repr(r))
 
     def test_send_recv(self):
         r = ZmqTestReceiver(
-            self.factory, ZmqEndpoint(ZmqEndpointType.bind, "inproc://#1"))
+            ZmqEndpoint(ZmqEndpointType.bind, "inproc://#1"))
+        r.listen(self.factory)
         s = ZmqTestSender(
-            self.factory, ZmqEndpoint(ZmqEndpointType.connect, "inproc://#1"))
+            ZmqEndpoint(ZmqEndpointType.connect, "inproc://#1"))
+        s.connect(self.factory)
 
         s.send('abcd')
 
@@ -73,11 +77,11 @@ class ZmqConnectionTestCase(unittest.TestCase):
 
     def test_send_recv_tcp(self):
         r = ZmqTestReceiver(
-            self.factory, ZmqEndpoint(ZmqEndpointType.bind,
-            "tcp://127.0.0.1:5555"))
+            ZmqEndpoint(ZmqEndpointType.bind, "tcp://127.0.0.1:5555"))
+        r.listen(self.factory)
         s = ZmqTestSender(
-            self.factory, ZmqEndpoint(ZmqEndpointType.connect,
-            "tcp://127.0.0.1:5555"))
+            ZmqEndpoint(ZmqEndpointType.connect, "tcp://127.0.0.1:5555"))
+        s.connect(self.factory)
 
         for i in xrange(100):
             s.send(str(i))
@@ -92,12 +96,11 @@ class ZmqConnectionTestCase(unittest.TestCase):
 
     def test_send_recv_tcp_large(self):
         r = ZmqTestReceiver(
-            self.factory, ZmqEndpoint(ZmqEndpointType.bind,
-            "tcp://127.0.0.1:5555"))
+            ZmqEndpoint(ZmqEndpointType.bind, "tcp://127.0.0.1:5555"))
+        r.listen(self.factory)
         s = ZmqTestSender(
-            self.factory, ZmqEndpoint(ZmqEndpointType.connect,
-            "tcp://127.0.0.1:5555"))
-
+            ZmqEndpoint(ZmqEndpointType.connect, "tcp://127.0.0.1:5555"))
+        s.connect(self.factory)
         s.send(["0" * 10000, "1" * 10000])
 
         def check(ignore):

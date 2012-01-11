@@ -8,6 +8,7 @@ from zmq.core.socket import Socket
 
 from zope.interface import implements
 
+from twisted.internet import defer
 from twisted.internet.interfaces import IFileDescriptor, IReadDescriptor
 from twisted.python import log
 
@@ -55,7 +56,7 @@ class ZmqConnection(object):
     highWaterMark = 0
     identity = None
 
-    def __init__(self, factory, *endpoints):
+    def __init__(self, *endpoints):
         """
         Constructor.
 
@@ -64,43 +65,74 @@ class ZmqConnection(object):
         @param endpoints: ZeroMQ addresses for connect/bind
         @type endpoints: C{list} of L{ZmqEndpoint}
         """
-        self.factory = factory
+        self.factory = None
         self.endpoints = endpoints
-        self.socket = Socket(factory.context, self.socketType)
         self.queue = deque()
         self.recv_parts = []
+        self.fd = None
+        self.isListening = False
+        self.isConnected = False
 
-        self.fd = self.socket.getsockopt(constants.FD)
-        self.socket.setsockopt(constants.LINGER, factory.lingerPeriod)
-        self.socket.setsockopt(
+    def __repr__(self):
+        return "%s(%r, %r)" % (
+            self.__class__.__name__, self.factory, self.endpoints)
+
+    def _createSocket(self, factory):
+        """
+        Create a socket and assign the fd.
+        """
+        socket = Socket(factory.context, self.socketType)
+        self.fd = socket.getsockopt(constants.FD)
+        socket.setsockopt(constants.LINGER, factory.lingerPeriod)
+        socket.setsockopt(
             constants.MCAST_LOOP, int(self.allowLoopbackMulticast))
-        self.socket.setsockopt(constants.RATE, self.multicastRate)
-        self.socket.setsockopt(constants.HWM, self.highWaterMark)
+        socket.setsockopt(constants.RATE, self.multicastRate)
+        socket.setsockopt(constants.HWM, self.highWaterMark)
         if self.identity is not None:
-            self.socket.setsockopt(constants.IDENTITY, self.identity)
+            socket.setsockopt(constants.IDENTITY, self.identity)
+        return socket
 
-        self._connectOrBind()
+    def _connectOrBind(self, factory):
+        """
+        Connect and/or bind socket to endpoints.
+        """
+        self.socket = self._createSocket(factory)
+        for endpoint in self.endpoints:
+            if endpoint.type == ZmqEndpointType.connect:
+                self.socket.connect(endpoint.address)
+                self.isConnected = True
+            elif endpoint.type == ZmqEndpointType.bind:
+                self.socket.bind(endpoint.address)
+                self.isListening = True
+            else:
+                assert False, "Unknown endpoint type %r" % endpoint
+        factory.connections.add(self)
+        factory.reactor.addReader(self)
+        self.factory = factory
 
-        self.factory.connections.add(self)
+    def connect(self, factory):
+        self._connectOrBind(factory)
+        # XXX after examining use cases, we can determine what we would like
+        # this deferred to return
+        return defer.succeed(True)
 
-        self.factory.reactor.addReader(self)
+    def listen(self, factory):
+        self._connectOrBind(factory)
+        # XXX after examining use cases, we can determine what we would like
+        # this deferred to return
+        return defer.succeed(True)
 
     def shutdown(self):
         """
         Shutdown connection and socket.
         """
         self.factory.reactor.removeReader(self)
-
         self.factory.connections.discard(self)
-
         self.socket.close()
+        self.isConnected = False
+        self.isListening = False
         self.socket = None
-
         self.factory = None
-
-    def __repr__(self):
-        return "%s(%r, %r)" % (
-            self.__class__.__name__, self.factory, self.endpoints)
 
     def fileno(self):
         """
@@ -161,7 +193,6 @@ class ZmqConnection(object):
                 except error.ZMQError as e:
                     if e.errno == constants.EAGAIN:
                         break
-
                     raise e
 
                 log.callWithLogger(self, self.messageReceived, message)
@@ -217,15 +248,3 @@ class ZmqConnection(object):
         @param message: message data
         """
         raise NotImplementedError(self)
-
-    def _connectOrBind(self):
-        """
-        Connect and/or bind socket to endpoints.
-        """
-        for endpoint in self.endpoints:
-            if endpoint.type == ZmqEndpointType.connect:
-                self.socket.connect(endpoint.address)
-            elif endpoint.type == ZmqEndpointType.bind:
-                self.socket.bind(endpoint.address)
-            else:
-                assert False, "Unknown endpoint type %r" % endpoint

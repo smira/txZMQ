@@ -32,10 +32,11 @@ class ZmqConnectionTestCase(unittest.TestCase):
 
     def test_send_recv(self):
         r = ZmqTestSubConnection(
-            self.factory, ZmqEndpoint(ZmqEndpointType.bind, "ipc://test-sock"))
+            ZmqEndpoint(ZmqEndpointType.bind, "ipc://test-sock"))
+        r.listen(self.factory)
         s = ZmqPubConnection(
-            self.factory, ZmqEndpoint(ZmqEndpointType.connect,
-            "ipc://test-sock"))
+            ZmqEndpoint(ZmqEndpointType.connect, "ipc://test-sock"))
+        s.connect(self.factory)
 
         r.subscribe('tag')
         s.publish('xyz', 'different-tag')
@@ -51,10 +52,12 @@ class ZmqConnectionTestCase(unittest.TestCase):
         return _wait(0.01).addCallback(check)
 
     def test_send_recv_pgm(self):
-        r = ZmqTestSubConnection(self.factory, ZmqEndpoint(
+        r = ZmqTestSubConnection(ZmqEndpoint(
             ZmqEndpointType.bind, "epgm://127.0.0.1;239.192.1.1:5556"))
-        s = ZmqPubConnection(self.factory, ZmqEndpoint(
+        r.listen(self.factory)
+        s = ZmqPubConnection(ZmqEndpoint(
             ZmqEndpointType.connect, "epgm://127.0.0.1;239.192.1.1:5556"))
+        s.connect(self.factory)
 
         r.subscribe('tag')
         s.publish('xyz', 'different-tag')
@@ -70,15 +73,15 @@ class ZmqConnectionTestCase(unittest.TestCase):
 
     def test_send_recv_multiple_endpoints(self):
         r = ZmqTestSubConnection(
-            self.factory,
             ZmqEndpoint(ZmqEndpointType.bind, "tcp://127.0.0.1:5556"),
             ZmqEndpoint(ZmqEndpointType.bind, "inproc://endpoint"))
+        r.listen(self.factory)
         s1 = ZmqPubConnection(
-            self.factory,
             ZmqEndpoint(ZmqEndpointType.connect, "tcp://127.0.0.1:5556"))
+        s1.connect(self.factory)
         s2 = ZmqPubConnection(
-            self.factory,
             ZmqEndpoint(ZmqEndpointType.connect, "inproc://endpoint"))
+        s2.connect(self.factory)
 
         r.subscribe('')
         s1.publish('111', 'tag1')

@@ -52,7 +52,6 @@ class ZmqFactory(object):
             connection.shutdown()
 
         self.connections = None
-
         self.context.term()
         self.context = None
 

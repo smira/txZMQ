@@ -3,6 +3,8 @@ ZeroMQ PUB-SUB wrappers.
 """
 from zmq.core import constants
 
+from twisted.internet import defer
+
 from txzmq.connection import ZmqConnection
 
 
@@ -22,6 +24,9 @@ class ZmqPubConnection(ZmqConnection):
         @type tag: C{str}
         """
         self.send(tag + '\0' + message)
+        deferred = defer.Deferred()
+        deferred.callback(self)
+        return deferred
 
 
 class ZmqSubConnection(ZmqConnection):
