@@ -3,6 +3,7 @@ Tests for L{txzmq.pubsub}.
 """
 from twisted.trial import unittest
 
+from txzmq import exceptions
 from txzmq.connection import ZmqEndpoint, ZmqEndpointType
 from txzmq.factory import ZmqFactory
 from txzmq.pubsub import ZmqPubConnection, ZmqSubConnection
@@ -10,6 +11,7 @@ from txzmq.test import _wait
 
 
 class ZmqTestSubConnection(ZmqSubConnection):
+
     def gotMessage(self, message, tag):
         if not hasattr(self, 'messages'):
             self.messages = []
@@ -17,19 +19,195 @@ class ZmqTestSubConnection(ZmqSubConnection):
         self.messages.append([tag, message])
 
 
-class ZmqConnectionTestCase(unittest.TestCase):
-    """
-    Test case for L{zmq.twisted.connection.Connection}.
-    """
+class BaseFakeSocket(object):
 
+    def __init__(self, factory):
+        self.factory = factory
+
+    def setsockopt(self, *args, **kwargs):
+        pass
+
+    def connect(self, *args, **kwargs):
+        pass
+
+    def bind(self, *args, **kwargs):
+        pass
+
+    def close(self, *args, **kwargs):
+        pass
+
+
+class BaseTestCase(unittest.TestCase):
+    """
+    This should be subclassed by the other test cases in this module.
+    """
     def setUp(self):
         self.factory = ZmqFactory()
+        self.factory.testMessage = ""
         ZmqPubConnection.allowLoopbackMulticast = True
 
     def tearDown(self):
         del ZmqPubConnection.allowLoopbackMulticast
         self.factory.shutdown()
 
+
+class ZmqSubConnectionTestCase(BaseTestCase):
+    """
+    Test case for L{txzmq.pubsub.ZmqSubConnection}.
+    """
+
+    def test_subscribe_success(self):
+
+        class FakeSocket(BaseFakeSocket):
+            def setsockopt(self, *args, **kwargs):
+                self.factory.testMessage = "Fake success!"
+
+        def fakeCreateSocket(factory):
+            return FakeSocket(factory)
+
+        def checkSubscribe(ignored):
+            self.assertEqual(self.factory.testMessage, "Fake success!")
+
+        def checkConnect(client):
+            self.assertEqual(self.factory.testMessage, "")
+            d = client.subscribe(None)
+            d.addCallback(checkSubscribe)
+
+        s = ZmqSubConnection(
+            ZmqEndpoint(ZmqEndpointType.connect, "inproc://#1"))
+        self.patch(s, '_createSocket', fakeCreateSocket)
+        d = s.connect(self.factory)
+        d.addCallback(checkConnect)
+        return d
+
+    def test_subscribe_fail(self):
+
+        class FakeSocket(BaseFakeSocket):
+            def setsockopt(self, *args, **kwargs):
+                raise Exception("ohnoz!")
+
+        def fakeCreateSocket(factory):
+            return FakeSocket(factory)
+
+        def checkSubscribe(error):
+            self.assertEqual(str(error), "ohnoz!")
+
+        def checkConnect(client):
+            self.assertEqual(self.factory.testMessage, "")
+            failure = client.subscribe(None)
+            d = self.assertFailure(failure, exceptions.SubscribingError)
+            d.addCallback(checkSubscribe)
+
+        s = ZmqSubConnection(
+            ZmqEndpoint(ZmqEndpointType.connect, "inproc://#1"))
+        self.patch(s, '_createSocket', fakeCreateSocket)
+        d = s.connect(self.factory)
+        d.addCallback(checkConnect)
+        return d
+
+    def test_unsubscribe_success(self):
+
+        class FakeSocket(BaseFakeSocket):
+            def setsockopt(self, *args, **kwargs):
+                self.factory.testMessage = "Fake success!"
+
+        def fakeCreateSocket(factory):
+            return FakeSocket(factory)
+
+        def checkSubscribe(ignored):
+            self.assertEqual(self.factory.testMessage, "Fake success!")
+
+        def checkConnect(client):
+            self.assertEqual(self.factory.testMessage, "")
+            d = client.unsubscribe(None)
+            d.addCallback(checkSubscribe)
+
+        s = ZmqSubConnection(
+            ZmqEndpoint(ZmqEndpointType.connect, "inproc://#1"))
+        self.patch(s, '_createSocket', fakeCreateSocket)
+        d = s.connect(self.factory)
+        d.addCallback(checkConnect)
+        return d
+
+    def test_unsubscribe_fail(self):
+
+        class FakeSocket(BaseFakeSocket):
+            def setsockopt(self, *args, **kwargs):
+                raise Exception("ohnoz!")
+
+        def fakeCreateSocket(factory):
+            return FakeSocket(factory)
+
+        def checkUnsubscribe(error):
+            self.assertEqual(str(error), "ohnoz!")
+
+        def checkConnect(client):
+            self.assertEqual(self.factory.testMessage, "")
+            failure = client.unsubscribe(None)
+            d = self.assertFailure(failure, exceptions.UnsubscribingError)
+            d.addCallback(checkUnsubscribe)
+
+        s = ZmqSubConnection(
+            ZmqEndpoint(ZmqEndpointType.connect, "inproc://#1"))
+        self.patch(s, '_createSocket', fakeCreateSocket)
+        d = s.connect(self.factory)
+        d.addCallback(checkConnect)
+        return d
+
+
+class ZmqPubConnectionTestCase(BaseTestCase):
+    """
+    Test case for L{txzmq.pubsub.ZmqPubConnection}.
+    """
+
+    def test_publish_success(self):
+
+        def fakeSend(message):
+            self.factory.testMessage = message
+
+        def checkPublish(server):
+            expected = "\x00a really special message"
+            self.assertEqual(self.factory.testMessage, expected)
+
+        def checkListen(server):
+            self.assertEqual(self.factory.testMessage, "")
+            d = server.publish("a really special message")
+            d.addCallback(checkPublish)
+
+        s = ZmqPubConnection(
+            ZmqEndpoint(ZmqEndpointType.bind, "inproc://#1"))
+        self.patch(s, 'send', fakeSend)
+        d = s.listen(self.factory)
+        d.addCallback(checkListen)
+        return d
+
+    def test_publish_fail(self):
+
+        def fakeSend(factory):
+            raise Exception("ohnoz!")
+
+        def checkPublish(error):
+            self.assertEqual(str(error), "ohnoz!")
+
+        def checkListen(server):
+            self.assertEqual(self.factory.testMessage, "")
+            failure = server.publish("a really special message")
+            d = self.assertFailure(failure, exceptions.PublishingError)
+            d.addCallback(checkPublish)
+
+        s = ZmqPubConnection(
+            ZmqEndpoint(ZmqEndpointType.bind, "inproc://#1"))
+        self.patch(s, 'send', fakeSend)
+        d = s.listen(self.factory)
+        d.addCallback(checkListen)
+        return d
+
+
+class ZmqPubSubConnectionsTestCase(BaseTestCase):
+    """
+    Test case for mixed L{txzmq.pubsub.ZmqPubConnection} and
+    L{txzmq.pubsub.ZmqSubConnection}.
+    """
     def test_send_recv(self):
         r = ZmqTestSubConnection(
             ZmqEndpoint(ZmqEndpointType.bind, "ipc://test-sock"))

@@ -5,6 +5,7 @@ from zmq.core import constants
 
 from twisted.internet import defer
 
+from txzmq import exceptions
 from txzmq.connection import ZmqConnection
 
 
@@ -26,8 +27,12 @@ class ZmqPubConnection(ZmqConnection):
         @param tag: message tag
         @type tag: C{str}
         """
-        self.send(tag + '\0' + message)
-        return defer.succeed(self)
+        try:
+            self.send(tag + '\0' + message)
+        except Exception, err:
+            return defer.fail(exceptions.PublishingError(err.args[0]))
+        else:
+            return defer.succeed(self)
 
 
 class ZmqSubConnection(ZmqConnection):
@@ -46,8 +51,12 @@ class ZmqSubConnection(ZmqConnection):
         @param tag: message tag
         @type tag: C{str}
         """
-        self.socket.setsockopt(constants.SUBSCRIBE, tag)
-        return defer.succeed(self)
+        try:
+            self.socket.setsockopt(constants.SUBSCRIBE, tag)
+        except Exception, err:
+            return defer.fail(exceptions.SubscribingError(err.args[0]))
+        else:
+            return defer.succeed(self)
 
     def unsubscribe(self, tag):
         """
@@ -59,8 +68,12 @@ class ZmqSubConnection(ZmqConnection):
         @param tag: message tag
         @type tag: C{str}
         """
-        self.socket.setsockopt(constants.UNSUBSCRIBE, tag)
-        return defer.succeed(self)
+        try:
+            self.socket.setsockopt(constants.UNSUBSCRIBE, tag)
+        except Exception, err:
+            return defer.fail(exceptions.UnsubscribingError(err.args[0]))
+        else:
+            return defer.succeed(self)
 
     def messageReceived(self, message):
         """
