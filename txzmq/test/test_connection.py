@@ -164,7 +164,7 @@ class ZmqConnectionTestCase(unittest.TestCase):
             raise Exception("ohnoz!")
 
         def check(error):
-            self.assertEqual(str(error), "ohnoz!")
+            self.assertEqual(str(error), "exceptions.Exception: ohnoz!")
 
         s = ZmqTestReceiver(
             ZmqEndpoint(ZmqEndpointType.bind, "inproc://#1"))
