@@ -5,7 +5,7 @@ from zmq.core import constants
 
 from twisted.internet import defer
 
-from txzmq import exceptions
+from txzmq import exceptions, util
 from txzmq.connection import ZmqConnection
 
 
@@ -30,7 +30,8 @@ class ZmqPubConnection(ZmqConnection):
         try:
             self.send(tag + '\0' + message)
         except Exception, err:
-            return defer.fail(exceptions.PublishingError(err.args[0]))
+            msg = util.buildErrorMessage(err)
+            return defer.fail(exceptions.PublishingError(msg))
         else:
             return defer.succeed(self)
 
@@ -54,7 +55,8 @@ class ZmqSubConnection(ZmqConnection):
         try:
             self.socket.setsockopt(constants.SUBSCRIBE, tag)
         except Exception, err:
-            return defer.fail(exceptions.SubscribingError(err.args[0]))
+            msg = util.buildErrorMessage(err)
+            return defer.fail(exceptions.SubscribingError(msg))
         else:
             return defer.succeed(self)
 
@@ -71,7 +73,8 @@ class ZmqSubConnection(ZmqConnection):
         try:
             self.socket.setsockopt(constants.UNSUBSCRIBE, tag)
         except Exception, err:
-            return defer.fail(exceptions.UnsubscribingError(err.args[0]))
+            msg = util.buildErrorMessage(err)
+            return defer.fail(exceptions.UnsubscribingError(msg))
         else:
             return defer.succeed(self)
 

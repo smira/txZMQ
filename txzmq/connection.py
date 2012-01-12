@@ -12,7 +12,7 @@ from twisted.internet import defer
 from twisted.internet.interfaces import IFileDescriptor, IReadDescriptor
 from twisted.python import log
 
-from txzmq import exceptions
+from txzmq import exceptions, util
 
 
 class ZmqEndpointType(object):
@@ -126,7 +126,8 @@ class ZmqConnection(object):
         try:
             self._connectOrBind(factory)
         except Exception, err:
-            return defer.fail(exceptions.ConnectionError(err.args[0]))
+            msg = util.buildErrorMessage(err)
+            return defer.fail(exceptions.ConnectionError(msg))
         else:
             return defer.succeed(self)
 
@@ -140,7 +141,8 @@ class ZmqConnection(object):
         try:
             self._connectOrBind(factory)
         except Exception, err:
-            return defer.fail(exceptions.ListenError(err.args[0]))
+            msg = util.buildErrorMessage(err)
+            return defer.fail(exceptions.ListenError(msg))
         else:
             return defer.succeed(self)
 
