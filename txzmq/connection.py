@@ -126,6 +126,26 @@ class ZmqConnection(object):
         self._connectOrBind(factory)
         return defer.succeed(self)
 
+    def connectionLost(self, reason):
+        """
+        Called when the connection was lost.
+
+        Part of L{IFileDescriptor}.
+
+        This is called when the connection on a selectable object has been
+        lost.  It will be called whether the connection was closed explicitly,
+        an exception occurred in an event handler, or the other end of the
+        connection closed it first.
+
+        @param reason: A failure instance indicating the reason why the
+                       connection was lost.  L{error.ConnectionLost} and
+                       L{error.ConnectionDone} are of special note, but the
+                       failure may be of other classes as well.
+        """
+        log.err(reason, "Connection to ZeroMQ lost in %r" % (self))
+        if self.factory:
+            self.factory.reactor.removeReader(self)
+
     def shutdown(self):
         """
         Shutdown connection and socket.
@@ -147,25 +167,14 @@ class ZmqConnection(object):
         """
         return self.fd
 
-    def connectionLost(self, reason):
+    def logPrefix(self):
         """
-        Called when the connection was lost.
+        Part of L{ILoggingContext}.
 
-        Part of L{IFileDescriptor}.
-
-        This is called when the connection on a selectable object has been
-        lost.  It will be called whether the connection was closed explicitly,
-        an exception occurred in an event handler, or the other end of the
-        connection closed it first.
-
-        @param reason: A failure instance indicating the reason why the
-                       connection was lost.  L{error.ConnectionLost} and
-                       L{error.ConnectionDone} are of special note, but the
-                       failure may be of other classes as well.
+        @return: Prefix used during log formatting to indicate context.
+        @rtype: C{str}
         """
-        log.err(reason, "Connection to ZeroMQ lost in %r" % (self))
-        if self.factory:
-            self.factory.reactor.removeReader(self)
+        return 'ZMQ'
 
     def _readMultipart(self):
         """
@@ -217,15 +226,6 @@ class ZmqConnection(object):
                 self.queue.popleft()
                 raise e
             self.queue.popleft()
-
-    def logPrefix(self):
-        """
-        Part of L{ILoggingContext}.
-
-        @return: Prefix used during log formatting to indicate context.
-        @rtype: C{str}
-        """
-        return 'ZMQ'
 
     def send(self, message):
         """
