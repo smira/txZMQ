@@ -8,6 +8,7 @@ from zope.interface import verify as ziv
 from twisted.internet.interfaces import IFileDescriptor, IReadDescriptor
 from twisted.trial import unittest
 
+from txzmq import exceptions
 from txzmq.connection import ZmqConnection, ZmqEndpoint, ZmqEndpointType
 from txzmq.factory import ZmqFactory
 from txzmq.test import _wait
@@ -110,3 +111,65 @@ class ZmqConnectionTestCase(unittest.TestCase):
                 result, expected, "Messages should have been received")
 
         return _wait(0.01).addCallback(check)
+
+    def test_connect_success(self):
+
+        def fakeConnectOrBind(ignored):
+            self.factory.testMessage = "Fake success!"
+
+        def check(ignored):
+            self.assertEqual(self.factory.testMessage, "Fake success!")
+
+        s = ZmqTestSender(
+            ZmqEndpoint(ZmqEndpointType.connect, "inproc://#1"))
+        self.patch(s, '_connectOrBind', fakeConnectOrBind)
+        d = s.connect(self.factory)
+        d.addCallback(check)
+        return d
+
+    def test_connect_fail(self):
+
+        def fakeConnectOrBind(factory):
+            raise Exception("ohnoz!")
+
+        def check(error):
+            self.assertEqual(str(error), "ohnoz!")
+
+        s = ZmqTestSender(
+            ZmqEndpoint(ZmqEndpointType.connect, "inproc://#1"))
+        self.patch(s, '_connectOrBind', fakeConnectOrBind)
+        failure = s.connect(self.factory)
+        d = self.assertFailure(failure, exceptions.ConnectionError)
+        d.addCallback(check)
+        return d
+
+    def test_listen_success(self):
+
+        def fakeConnectOrBind(ignored):
+            self.factory.testMessage = "Fake success!"
+
+        def check(ignored):
+            self.assertEqual(self.factory.testMessage, "Fake success!")
+
+        s = ZmqTestReceiver(
+            ZmqEndpoint(ZmqEndpointType.bind, "inproc://#1"))
+        self.patch(s, '_connectOrBind', fakeConnectOrBind)
+        d = s.listen(self.factory)
+        d.addCallback(check)
+        return d
+
+    def test_listen_fail(self):
+
+        def fakeConnectOrBind(factory):
+            raise Exception("ohnoz!")
+
+        def check(error):
+            self.assertEqual(str(error), "ohnoz!")
+
+        s = ZmqTestReceiver(
+            ZmqEndpoint(ZmqEndpointType.bind, "inproc://#1"))
+        self.patch(s, '_connectOrBind', fakeConnectOrBind)
+        failure = s.listen(self.factory)
+        d = self.assertFailure(failure, exceptions.ListenError)
+        d.addCallback(check)
+        return d

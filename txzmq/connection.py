@@ -12,6 +12,8 @@ from twisted.internet import defer
 from twisted.internet.interfaces import IFileDescriptor, IReadDescriptor
 from twisted.python import log
 
+from txzmq import exceptions
+
 
 class ZmqEndpointType(object):
     """
@@ -121,8 +123,12 @@ class ZmqConnection(object):
         txZMQ is really the reactor checking the socket's file descriptor to
         see if there's data available to read or write.
         """
-        self._connectOrBind(factory)
-        return defer.succeed(self)
+        try:
+            self._connectOrBind(factory)
+        except Exception, err:
+            return defer.fail(exceptions.ConnectionError(err.args[0]))
+        else:
+            return defer.succeed(self)
 
     def listen(self, factory):
         """
@@ -131,8 +137,12 @@ class ZmqConnection(object):
         For notes about the use of deferred here, see the deffered comment in
         the docstring for ZmqConnection.connect.
         """
-        self._connectOrBind(factory)
-        return defer.succeed(self)
+        try:
+            self._connectOrBind(factory)
+        except Exception, err:
+            return defer.fail(exceptions.ListenError(err.args[0]))
+        else:
+            return defer.succeed(self)
 
     def connectionLost(self, reason):
         """
