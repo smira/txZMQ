@@ -21,7 +21,9 @@ env-clean: clean-env env
 
 check: env
 	env/bin/pep8 --repeat --ignore=E501 txzmq
+	env/bin/pep8 --repeat --ignore=E501 examples
 	env/bin/pyflakes txzmq
+	env/bin/pyflakes examples
 
 check-clean: clean check
 

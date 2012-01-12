@@ -1,7 +1,7 @@
 """
 Tests for L{txzmq.pubsub}.
 """
-from zmq.core import constants, error
+from zmq.core import constants
 from zmq.core.socket import Socket
 
 from twisted.trial import unittest
