@@ -12,7 +12,7 @@ clean-env: clean
 	rm -rf env/
 
 env:
-	$(VIRTUALENV) --no-site-packages env/
+	$(VIRTUALENV) env/
 	env/bin/python -c 'import sys; print "_pypy" if sys.subversion[0] == "PyPy" else "_cpython"' > .runtime_cfg
 	env/bin/pip install -r requirements`cat .runtime_cfg`.txt -r requirements.txt
 	rm -f .runtime_cfg
@@ -25,8 +25,9 @@ check: env
 
 check-clean: clean check
 
+test: MOD?="txzmq"
 test: env
-	env/bin/trial txzmq
+	env/bin/trial $(MOD)
 
 test-clean: clean test
 
