@@ -1,4 +1,4 @@
-Twisted bindings for 0MQ
+Twisted bindings for ØMQ
 ========================
 
 .. contents::
@@ -6,7 +6,7 @@ Twisted bindings for 0MQ
 Introduction
 ------------
 
-txZMQ allows to integrate easily `0MQ <http://zeromq.org>`_ sockets into
+txZMQ allows to integrate easily `ØMQ <http://zeromq.org>`_ sockets into
 Twisted event loop (reactor).
 
 txZMQ supports both CPython and PyPy.
@@ -17,7 +17,7 @@ Requirements
 
 Non-Python library required:
 
-* 0MQ library >= 2.1 (heavily tested with 2.1.4)
+* ØMQ library >= 2.1 (heavily tested with 2.1.4)
 
 Python packages required:
 
@@ -29,7 +29,7 @@ Python packages required:
 Details
 -------
 
-txZMQ introduces support for general 0MQ sockets by class ``ZmqConnection``
+txZMQ introduces support for general ØMQ sockets by class ``ZmqConnection``
 that can do basic event loop integration, sending-receiving messages in
 non-blocking manner, scatter-gather for multipart messages.
 
@@ -37,7 +37,7 @@ txZMQ uses ØMQ APIs to get file descriptor that is used to signal pending
 actions from ØMQ library IO thread running in separate thread. This is used in
 a custom file descriptor reader, which is then added to the Twisted reactor.
 
-From this class, one may implement the various patterns defined by 0MQ. For
+From this class, one may implement the various patterns defined by ØMQ. For
 example, special descendants of the ``ZmqConnection`` class,
 ``ZmqPubConnection`` and ``ZmqSubConnection``, add special nice features for
 PUB/SUB sockets.
@@ -51,57 +51,50 @@ Other socket types could be easily derived from ``ZmqConnection``.
 Example
 -------
 
-Here is an example of using txZMQ::
+Here is an example of creating a txZMQ server::
 
-    import sys
+    from txzmq import ZmqEndpoint, ZmqFactory, ZmqPubConnection
 
-    from optparse import OptionParser
+    def publish(server):
+        data = str(time.time())
+        print "Publishing %r ..." % data
+        server.publish(data)
+        print "Done."
+        reactor.callLater(1, publish, server)
 
-    from twisted.internet import reactor, defer
+    def onConnect(server):
+        print "Connected!"
+        publish(server)
 
-    parser = OptionParser("")
-    parser.add_option("-m", "--method", dest="method", help="0MQ socket connection: bind|connect")
-    parser.add_option("-e", "--endpoint", dest="endpoint", help="0MQ Endpoint")
-    parser.add_option("-M", "--mode", dest="mode", help="Mode: publisher|subscriber")
-
-    parser.set_defaults(method="connect", endpoint="epgm://eth1;239.0.5.3:10011")
-
-    (options, args) = parser.parse_args()
-
-    from txzmq import ZmqFactory, ZmqEndpoint, ZmqPubConnection, ZmqSubConnection
-    import time
-
-    zf = ZmqFactory()
-    e = ZmqEndpoint(options.method, options.endpoint)
-
-    if options.mode == "publisher":
-        s = ZmqPubConnection(zf, e)
-
-        def publish():
-            data = str(time.time())
-            print "publishing %r" % data
-            s.publish(data)
-
-            reactor.callLater(1, publish)
-
-        publish()
-    else:
-        s = ZmqSubConnection(zf, e)
-        s.subscribe("")
-
-        def doPrint(*args):
-            print "message received: %r" % (args, )
-
-        s.gotMessage = doPrint
-
+    endpoint = ZmqEndpoint("bind", "ipc:///tmp/sock")
+    server = ZmqPubConnection(endpoint)
+    deferred = server.listen(ZmqFactory())
+    deferred.addCallback(onConnect)
     reactor.run()
 
-The same example is available in the source code. You can run it from the
-checkout directory with the following commands (in two different terminals)::
+Here is an example of creating a txZMQ client::
 
-    examples/pub_sub.py --method=bind --endpoint=ipc:///tmp/sock --mode=publisher
+    from txzmq import ZmqEndpoint, ZmqFactory, ZmqPubConnection
 
-    examples/pub_sub.py --method=connect --endpoint=ipc:///tmp/sock --mode=subscriber
+    class MySubscriber(ZmqSubConnection):
+
+        def gotMessage(self, message, tag):
+            print "Message received: %s (%s)" % (message, tag)
+
+    def onConnect(client):
+        print "Connected!"
+        client.subscribe("")
+
+    endpoint = ZmqEndpoint("connect", "ipc:///tmp/sock")
+    client = MySubscriber(endpoint)
+    deferred = client.connect(ZmqFactory())
+    deferred.addCallback(onConnect)
+    reactor.run()
+
+Examples similar to this are available in the source code. You can run them
+from the command line with passed options. Be sure to read the comments at the
+beginning of the example files for usage information.
+
 
 Hacking
 -------

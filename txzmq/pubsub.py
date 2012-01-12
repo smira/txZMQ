@@ -3,6 +3,9 @@ ZeroMQ PUB-SUB wrappers.
 """
 from zmq.core import constants
 
+from twisted.internet import defer
+
+from txzmq import exceptions, util
 from txzmq.connection import ZmqConnection
 
 
@@ -16,12 +19,21 @@ class ZmqPubConnection(ZmqConnection):
         """
         Broadcast L{message} with specified L{tag}.
 
+        For notes about the use of deferred here, see the deffered comment in
+        the docstring for ZmqConnection.connect.
+
         @param message: message data
         @type message: C{str}
         @param tag: message tag
         @type tag: C{str}
         """
-        self.send(tag + '\0' + message)
+        try:
+            self.send(tag + '\0' + message)
+        except Exception, err:
+            msg = util.buildErrorMessage(err)
+            return defer.fail(exceptions.PublishingError(msg))
+        else:
+            return defer.succeed(self)
 
 
 class ZmqSubConnection(ZmqConnection):
@@ -34,19 +46,37 @@ class ZmqSubConnection(ZmqConnection):
         """
         Subscribe to messages with specified tag (prefix).
 
+        For notes about the use of deferred here, see the deffered comment in
+        the docstring for ZmqConnection.connect.
+
         @param tag: message tag
         @type tag: C{str}
         """
-        self.socket.setsockopt(constants.SUBSCRIBE, tag)
+        try:
+            self.socket.setsockopt(constants.SUBSCRIBE, tag)
+        except Exception, err:
+            msg = util.buildErrorMessage(err)
+            return defer.fail(exceptions.SubscribingError(msg))
+        else:
+            return defer.succeed(self)
 
     def unsubscribe(self, tag):
         """
         Unsubscribe from messages with specified tag (prefix).
 
+        For notes about the use of deferred here, see the deffered comment in
+        the docstring for ZmqConnection.connect.
+
         @param tag: message tag
         @type tag: C{str}
         """
-        self.socket.setsockopt(constants.UNSUBSCRIBE, tag)
+        try:
+            self.socket.setsockopt(constants.UNSUBSCRIBE, tag)
+        except Exception, err:
+            msg = util.buildErrorMessage(err)
+            return defer.fail(exceptions.UnsubscribingError(msg))
+        else:
+            return defer.succeed(self)
 
     def messageReceived(self, message):
         """
