@@ -5,6 +5,8 @@ all: test check
 clean:
 	find ./ -name "*.pyc" -exec rm {} \;
 	find ./ -name "*.pyo" -exec rm {} \;
+	find ./ -name "*.swp" -exec rm {} \;
+	find ./ -name "*.swo" -exec rm {} \;
 
 clean-env: clean
 	rm -rf env/

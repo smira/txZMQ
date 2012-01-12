@@ -91,7 +91,7 @@ Here is an example of creating a txZMQ client::
     deferred.addCallback(onConnect)
     reactor.run()
 
-The examples similar to this are available in the source code. You can run them
+Examples similar to this are available in the source code. You can run them
 from the command line with passed options. Be sure to read the comments at the
 beginning of the example files for usage information.
 
