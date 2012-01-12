@@ -12,9 +12,8 @@ Be sure to also run the server example (in another terminal window):
 """
 import os
 import sys
-import time
 
-from twisted.internet import reactor, defer
+from twisted.internet import reactor
 
 rootdir = os.path.realpath(os.path.join(
     os.path.dirname(sys.argv[0]), '..', '..'))
@@ -23,7 +22,7 @@ os.chdir(rootdir)
 
 from examples.pubsub import base
 
-from txzmq import ZmqEndpoint, ZmqFactory, ZmqPubConnection, ZmqSubConnection
+from txzmq import ZmqEndpoint, ZmqFactory, ZmqSubConnection
 
 
 (options, args) = base.getOptionsAndArgs()
