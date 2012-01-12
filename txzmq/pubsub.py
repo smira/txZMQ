@@ -18,15 +18,16 @@ class ZmqPubConnection(ZmqConnection):
         """
         Broadcast L{message} with specified L{tag}.
 
+        For notes about the use of deferred here, see the deffered comment in
+        the docstring for ZmqConnection.connect.
+
         @param message: message data
         @type message: C{str}
         @param tag: message tag
         @type tag: C{str}
         """
         self.send(tag + '\0' + message)
-        deferred = defer.Deferred()
-        deferred.callback(self)
-        return deferred
+        return defer.succeed(self)
 
 
 class ZmqSubConnection(ZmqConnection):
@@ -39,19 +40,27 @@ class ZmqSubConnection(ZmqConnection):
         """
         Subscribe to messages with specified tag (prefix).
 
+        For notes about the use of deferred here, see the deffered comment in
+        the docstring for ZmqConnection.connect.
+
         @param tag: message tag
         @type tag: C{str}
         """
         self.socket.setsockopt(constants.SUBSCRIBE, tag)
+        return defer.succeed(self)
 
     def unsubscribe(self, tag):
         """
         Unsubscribe from messages with specified tag (prefix).
 
+        For notes about the use of deferred here, see the deffered comment in
+        the docstring for ZmqConnection.connect.
+
         @param tag: message tag
         @type tag: C{str}
         """
         self.socket.setsockopt(constants.UNSUBSCRIBE, tag)
+        return defer.succeed(self)
 
     def messageReceived(self, message):
         """

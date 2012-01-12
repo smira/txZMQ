@@ -115,6 +115,11 @@ class ZmqConnection(object):
     def connect(self, factory):
         """
         What clients do.
+
+        The use of deferreds here is somewhat of an artiface, providing API
+        similarity with Twisted code more than anything else. What's async in
+        txZMQ is really the reactor checking the socket's file descriptor to
+        see if there's data available to read or write.
         """
         self._connectOrBind(factory)
         return defer.succeed(self)
@@ -122,6 +127,9 @@ class ZmqConnection(object):
     def listen(self, factory):
         """
         What servers do. This is Twisted-speak for "bind."
+
+        For notes about the use of deferred here, see the deffered comment in
+        the docstring for ZmqConnection.connect.
         """
         self._connectOrBind(factory)
         return defer.succeed(self)
@@ -185,7 +193,6 @@ class ZmqConnection(object):
             self.recv_parts.append(self.socket.recv(constants.NOBLOCK))
             if not self.socket.getsockopt(constants.RCVMORE):
                 result, self.recv_parts = self.recv_parts, []
-
                 return result
 
     def doRead(self):
@@ -207,7 +214,6 @@ class ZmqConnection(object):
                     if e.errno == constants.EAGAIN:
                         break
                     raise e
-
                 log.callWithLogger(self, self.messageReceived, message)
         if (events & constants.POLLOUT) == constants.POLLOUT:
             self._startWriting()
