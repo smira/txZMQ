@@ -1,6 +1,8 @@
 MANIFEST
+build/
 env/
 dist/
 _trial_temp/
 *.pyc
 *~
+*.swp
