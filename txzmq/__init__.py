@@ -9,5 +9,5 @@ from txzmq.xreq_xrep import ZmqXREQConnection
 
 
 __all__ = ['ZmqConnection', 'ZmqEndpoint', 'ZmqEndpointType', 'ZmqFactory',
-           'ZMQPushConnection', 'ZMQPullConnection', 'ZmqPubConnection',
+           'ZmqPushConnection', 'ZmqPullConnection', 'ZmqPubConnection',
            'ZmqSubConnection', 'ZmqXREQConnection']
