@@ -86,8 +86,8 @@ class ZmqConnectionTestCase(unittest.TestCase):
 
         def check(ignore):
             result = getattr(r, 'messages', [])
-            expected = [['tag2', '222'], ['tag1', '111']]
+            expected = [['tag1', '111'], ['tag2', '222']]
             self.failUnlessEqual(
-                result, expected, "Message should have been received")
+                sorted(result), expected, "Message should have been received")
 
         return _wait(0.2).addCallback(check)
