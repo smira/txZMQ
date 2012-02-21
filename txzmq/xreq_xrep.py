@@ -8,9 +8,12 @@ from twisted.internet import defer
 from txzmq.connection import ZmqConnection
 
 
-class ZmqXREQConnection(ZmqConnection):
+class ZmqREQConnection(ZmqConnection):
     """
-    A XREQ connection.
+    A REQ connection.
+
+    This is implemented with an underlying DEALER socket.
+
     """
     socketType = constants.DEALER
 
@@ -48,9 +51,12 @@ class ZmqXREQConnection(ZmqConnection):
         d.callback(msg)
 
 
-class ZmqXREPConnection(ZmqConnection):
+class ZmqREPConnection(ZmqConnection):
     """
-    A XREP connection.
+    A REP connection.
+
+    This is implemented with an underlying ROUTER socket.
+
     """
     socketType = constants.ROUTER
 
@@ -92,3 +98,9 @@ class ZmqXREPConnection(ZmqConnection):
         @param tag: message tag
         """
         raise NotImplementedError(self)
+
+
+# for backwards compatibility with the previous (misleading) naming scheme
+# XXX: should be deprecated?
+ZmqXREPConnection = ZmqREPConnection
+ZmqXREQConnection = ZmqREQConnection
