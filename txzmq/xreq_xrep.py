@@ -12,7 +12,7 @@ class ZmqXREQConnection(ZmqConnection):
     """
     A XREQ connection.
     """
-    socketType = constants.XREQ
+    socketType = constants.DEALER
 
     def __init__(self, factory, *endpoints):
         ZmqConnection.__init__(self, factory, *endpoints)
@@ -52,7 +52,7 @@ class ZmqXREPConnection(ZmqConnection):
     """
     A XREP connection.
     """
-    socketType = constants.XREP
+    socketType = constants.ROUTER
 
     def __init__(self, factory, *endpoints):
         ZmqConnection.__init__(self, factory, *endpoints)
