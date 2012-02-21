@@ -67,7 +67,7 @@ class ZmqXREPConnection(ZmqConnection):
         @param message: message data
         @type message: C{str}
         """
-        routing_info = self._routing_info[message_id]
+        routing_info = self._routing_info.pop(message_id)
         self.send(routing_info + [message_id, ''] + list(message_parts))
 
     def messageReceived(self, message):
