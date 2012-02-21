@@ -1,6 +1,8 @@
 """
 ZeroMQ PUB-SUB wrappers.
 """
+import uuid
+
 from zmq.core import constants
 
 from twisted.internet import defer
@@ -17,15 +19,22 @@ class ZmqREQConnection(ZmqConnection):
     """
     socketType = constants.DEALER
 
+    # the number of new UUIDs to generate when the pool runs out of them
+    UUID_POOL_GEN_SIZE = 5
+
     def __init__(self, factory, *endpoints):
         ZmqConnection.__init__(self, factory, *endpoints)
         self._requests = {}
+        self._uuids = []
 
     def _getNextId(self):
         """
         Returns an unique id.
         """
-        raise NotImplementedError(self)
+        if not self._uuids:
+            for _ in range(self.UUID_POOL_GEN_SIZE):
+                self._uuids.append(str(uuid.uuid4()))
+        return self._uuids.pop()
 
     def sendMsg(self, *message_parts):
         """
@@ -49,6 +58,10 @@ class ZmqREQConnection(ZmqConnection):
         msg_id, _, msg = message[0], message[1], message[2:]
         d = self._requests.pop(msg_id)
         d.callback(msg)
+
+        self._uuids.append(msg_id)
+        if len(self._uuids) > 2 * self.UUID_POOL_GEN_SIZE:
+            self._uuids[-self.UUID_POOL_GEN_SIZE:] = []
 
 
 class ZmqREPConnection(ZmqConnection):
