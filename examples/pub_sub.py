@@ -1,7 +1,7 @@
 #!env/bin/python
 
 """
-Example txZMQ client.
+Example txzmq client.
 
     examples/pub_sub.py --method=bind --endpoint=ipc:///tmp/sock --mode=publisher
 

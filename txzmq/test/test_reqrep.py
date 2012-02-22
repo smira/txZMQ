@@ -1,5 +1,5 @@
 """
-Tests for L{txzmq.xreq_xrep}.
+Tests for L{txzmq.req_rep}.
 """
 from twisted.internet import defer
 from twisted.trial import unittest
@@ -7,10 +7,10 @@ from twisted.trial import unittest
 from txzmq.connection import ZmqEndpoint, ZmqEndpointType
 from txzmq.factory import ZmqFactory
 from txzmq.test import _wait
-from txzmq.xreq_xrep import ZmqXREPConnection, ZmqXREQConnection
+from txzmq.req_rep import ZmqREPConnection, ZmqREQConnection
 
 
-class ZmqTestXREPConnection(ZmqXREPConnection):
+class ZmqTestREPConnection(ZmqREPConnection):
     identity = 'service'
 
     def gotMessage(self, message_id, *message_parts):
@@ -20,17 +20,17 @@ class ZmqTestXREPConnection(ZmqXREPConnection):
         self.reply(message_id, *message_parts)
 
 
-class ZmqConnectionTestCase(unittest.TestCase):
+class ZmqREQREPConnectionTestCase(unittest.TestCase):
     """
     Test case for L{zmq.twisted.connection.Connection}.
     """
 
     def setUp(self):
         self.factory = ZmqFactory()
-        ZmqXREQConnection.identity = 'client'
-        self.r = ZmqTestXREPConnection(self.factory,
+        ZmqREQConnection.identity = 'client'
+        self.r = ZmqTestREPConnection(self.factory,
                 ZmqEndpoint(ZmqEndpointType.bind, "ipc://#3"))
-        self.s = ZmqXREQConnection(self.factory,
+        self.s = ZmqREQConnection(self.factory,
                 ZmqEndpoint(ZmqEndpointType.connect, "ipc://#3"))
         self.count = 0
 
@@ -41,7 +41,7 @@ class ZmqConnectionTestCase(unittest.TestCase):
         self.s._getNextId = get_next_id
 
     def tearDown(self):
-        ZmqXREQConnection.identity = None
+        ZmqREQConnection.identity = None
         self.factory.shutdown()
 
     def test_send_recv(self):

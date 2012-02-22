@@ -1,5 +1,5 @@
 """
-ZeroMQ PUB-SUB wrappers.
+ZeroMQ REQ-REP wrappers.
 """
 from zmq.core import constants
 
@@ -12,8 +12,8 @@ class ZmqREQConnection(ZmqConnection):
     """
     A REQ connection.
 
-    This is implemented with an underlying DEALER socket.
-
+    This is implemented with an underlying DEALER socket, even though
+    semantics are closed to REQ socket.
     """
     socketType = constants.DEALER
 
@@ -55,8 +55,8 @@ class ZmqREPConnection(ZmqConnection):
     """
     A REP connection.
 
-    This is implemented with an underlying ROUTER socket.
-
+    This is implemented with an underlying ROUTER socket, but the semantics
+    are close to REP socket.
     """
     socketType = constants.ROUTER
 

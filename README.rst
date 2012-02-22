@@ -6,7 +6,7 @@ Twisted bindings for 0MQ
 Introduction
 ------------
 
-txZMQ allows to integrate easily `0MQ <http://zeromq.org>`_ sockets into
+txZMQ allows to integrate easily `ØMQ <http://zeromq.org>`_ sockets into
 Twisted event loop (reactor).
 
 txZMQ supports both CPython and PyPy.
@@ -17,7 +17,7 @@ Requirements
 
 Non-Python library required:
 
-* 0MQ library >= 2.1 (heavily tested with 2.1.4)
+* ØMQ library >= 2.1 (heavily tested with 2.1.4)
 
 Python packages required:
 
@@ -42,8 +42,8 @@ example, special descendants of the ``ZmqConnection`` class,
 ``ZmqPubConnection`` and ``ZmqSubConnection``, add special nice features for
 PUB/SUB sockets.
 
-Request/reply pattern is achieved via XREQ/XREP sockets and classes ``ZmqXREQConnection``, 
-``ZmqXREPConection``.
+Request/reply pattern is achieved via DEALER/ROUTER sockets and classes ``ZmqREQConnection``, 
+``ZmqREPConection``, which provide REQ-REP like semantics in asynchronous case.
 
 Other socket types could be easily derived from ``ZmqConnection``.
 
