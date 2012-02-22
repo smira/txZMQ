@@ -55,7 +55,7 @@ class ZmqConnection(object):
     highWaterMark = 0
     identity = None
 
-    def __init__(self, factory, *endpoints):
+    def __init__(self, factory, endpoint=None):
         """
         Constructor.
 
@@ -65,7 +65,7 @@ class ZmqConnection(object):
         @type endpoints: C{list} of L{ZmqEndpoint}
         """
         self.factory = factory
-        self.endpoints = endpoints
+        self.endpoints = []
         self.socket = Socket(factory.context, self.socketType)
         self.queue = deque()
         self.recv_parts = []
@@ -79,11 +79,16 @@ class ZmqConnection(object):
         if self.identity is not None:
             self.socket.setsockopt(constants.IDENTITY, self.identity)
 
-        self._connectOrBind()
+        if endpoint:
+            self.add_endpoints([endpoint])
 
         self.factory.connections.add(self)
 
         self.factory.reactor.addReader(self)
+
+    def add_endpoints(self, endpoints):
+        self.endpoints.extend(endpoints)
+        self._connectOrBind(endpoints)
 
     def shutdown(self):
         """
@@ -218,11 +223,11 @@ class ZmqConnection(object):
         """
         raise NotImplementedError(self)
 
-    def _connectOrBind(self):
+    def _connectOrBind(self, endpoints):
         """
         Connect and/or bind socket to endpoints.
         """
-        for endpoint in self.endpoints:
+        for endpoint in endpoints:
             if endpoint.type == ZmqEndpointType.connect:
                 self.socket.connect(endpoint.address)
             elif endpoint.type == ZmqEndpointType.bind:

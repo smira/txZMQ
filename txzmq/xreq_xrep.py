@@ -2,6 +2,7 @@
 ZeroMQ PUB-SUB wrappers.
 """
 import uuid
+import warnings
 
 from zmq.core import constants
 
@@ -22,8 +23,8 @@ class ZmqREQConnection(ZmqConnection):
     # the number of new UUIDs to generate when the pool runs out of them
     UUID_POOL_GEN_SIZE = 5
 
-    def __init__(self, factory, *endpoints):
-        ZmqConnection.__init__(self, factory, *endpoints)
+    def __init__(self, factory, endpoint=None):
+        ZmqConnection.__init__(self, factory, endpoint)
         self._requests = {}
         self._uuids = []
 
@@ -73,8 +74,8 @@ class ZmqREPConnection(ZmqConnection):
     """
     socketType = constants.ROUTER
 
-    def __init__(self, factory, *endpoints):
-        ZmqConnection.__init__(self, factory, *endpoints)
+    def __init__(self, factory, endpoint=None):
+        ZmqConnection.__init__(self, factory, endpoint)
         self._routing_info = {}  # keep track of routing info
 
     def reply(self, message_id, *message_parts):
@@ -113,7 +114,33 @@ class ZmqREPConnection(ZmqConnection):
         raise NotImplementedError(self)
 
 
-# for backwards compatibility with the previous (misleading) naming scheme
-# XXX: should be deprecated?
-ZmqXREPConnection = ZmqREPConnection
-ZmqXREQConnection = ZmqREQConnection
+class ZmqXREPConnection(ZmqREPConnection):
+    """
+    Provided for backwards compatibility.
+
+    Deprecated in favour of either ZmqREPConnection or ZmqROUTERConnection.
+
+    """
+
+    def __init__(self, factory, *endpoints):
+        warnings.warn("ZmqXREPConnection is deprecated in favour of "
+                      "either ZmqREPConnection or ZmqROUTERConnection",
+                      DeprecationWarning)
+        ZmqREPConnection.__init__(self, factory)
+        self.add_endpoints(endpoints)
+
+
+class ZmqXREQConnection(ZmqREQConnection):
+    """
+    Provided for backwards compatibility.
+
+    Deprecated in favour of either ZmqREQConnection or ZmqDEALERConnection.
+
+    """
+
+    def __init__(self, factory, *endpoints):
+        warnings.warn("ZmqXREQConnection is deprecated in favour of "
+                      "either ZmqREQConnection or ZmqDEALERConnection",
+                      DeprecationWarning)
+        ZmqREQConnection.__init__(self, factory)
+        self.add_endpoints(endpoints)
