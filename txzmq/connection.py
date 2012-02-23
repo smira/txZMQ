@@ -53,9 +53,8 @@ class ZmqConnection(object):
     allowLoopbackMulticast = False
     multicastRate = 100
     highWaterMark = 0
-    identity = None
 
-    def __init__(self, factory, endpoint=None):
+    def __init__(self, factory, endpoint=None, identity=None):
         """
         Constructor.
 
@@ -66,6 +65,7 @@ class ZmqConnection(object):
         """
         self.factory = factory
         self.endpoints = []
+        self.identity = identity
         self.socket = Socket(factory.context, self.socketType)
         self.queue = deque()
         self.recv_parts = []
