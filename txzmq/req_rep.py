@@ -1,6 +1,9 @@
 """
 ZeroMQ REQ-REP wrappers.
 """
+import uuid
+import warnings
+
 from zmq.core import constants
 
 from twisted.internet import defer
@@ -17,15 +20,22 @@ class ZmqREQConnection(ZmqConnection):
     """
     socketType = constants.DEALER
 
-    def __init__(self, factory, *endpoints):
-        ZmqConnection.__init__(self, factory, *endpoints)
+    # the number of new UUIDs to generate when the pool runs out of them
+    UUID_POOL_GEN_SIZE = 5
+
+    def __init__(self, factory, endpoint=None):
+        ZmqConnection.__init__(self, factory, endpoint)
         self._requests = {}
+        self._uuids = []
 
     def _getNextId(self):
         """
         Returns an unique id.
         """
-        raise NotImplementedError(self)
+        if not self._uuids:
+            for _ in range(self.UUID_POOL_GEN_SIZE):
+                self._uuids.append(str(uuid.uuid4()))
+        return self._uuids.pop()
 
     def sendMsg(self, *message_parts):
         """
@@ -50,6 +60,10 @@ class ZmqREQConnection(ZmqConnection):
         d = self._requests.pop(msg_id)
         d.callback(msg)
 
+        self._uuids.append(msg_id)
+        if len(self._uuids) > 2 * self.UUID_POOL_GEN_SIZE:
+            self._uuids[-self.UUID_POOL_GEN_SIZE:] = []
+
 
 class ZmqREPConnection(ZmqConnection):
     """
@@ -60,8 +74,8 @@ class ZmqREPConnection(ZmqConnection):
     """
     socketType = constants.ROUTER
 
-    def __init__(self, factory, *endpoints):
-        ZmqConnection.__init__(self, factory, *endpoints)
+    def __init__(self, factory, endpoint=None):
+        ZmqConnection.__init__(self, factory, endpoint)
         self._routing_info = {}  # keep track of routing info
 
     def reply(self, message_id, *message_parts):
@@ -100,7 +114,33 @@ class ZmqREPConnection(ZmqConnection):
         raise NotImplementedError(self)
 
 
-# for backwards compatibility with the previous (misleading) naming scheme
-# XXX: should be deprecated?
-ZmqXREPConnection = ZmqREPConnection
-ZmqXREQConnection = ZmqREQConnection
+class ZmqXREPConnection(ZmqREPConnection):
+    """
+    Provided for backwards compatibility.
+
+    Deprecated in favour of either ZmqREPConnection or ZmqROUTERConnection.
+
+    """
+
+    def __init__(self, factory, *endpoints):
+        warnings.warn("ZmqXREPConnection is deprecated in favour of "
+                      "either ZmqREPConnection or ZmqROUTERConnection",
+                      DeprecationWarning)
+        ZmqREPConnection.__init__(self, factory)
+        self.add_endpoints(endpoints)
+
+
+class ZmqXREQConnection(ZmqREQConnection):
+    """
+    Provided for backwards compatibility.
+
+    Deprecated in favour of either ZmqREQConnection or ZmqDEALERConnection.
+
+    """
+
+    def __init__(self, factory, *endpoints):
+        warnings.warn("ZmqXREQConnection is deprecated in favour of "
+                      "either ZmqREQConnection or ZmqDEALERConnection",
+                      DeprecationWarning)
+        ZmqREQConnection.__init__(self, factory)
+        self.add_endpoints(endpoints)
