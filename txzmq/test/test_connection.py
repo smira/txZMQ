@@ -50,7 +50,7 @@ class ZmqConnectionTestCase(unittest.TestCase):
 
     def test_repr(self):
         expected = ("ZmqTestReceiver(ZmqFactory(), "
-                    "(ZmqEndpoint(type='bind', address='inproc://#1'),))")
+                    "[ZmqEndpoint(type='bind', address='inproc://#1')])")
         result = ZmqTestReceiver(
             self.factory, ZmqEndpoint(ZmqEndpointType.bind, "inproc://#1"))
         self.failUnlessEqual(expected, repr(result))
