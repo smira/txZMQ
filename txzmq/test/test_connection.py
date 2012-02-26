@@ -48,6 +48,25 @@ class ZmqConnectionTestCase(unittest.TestCase):
         ZmqTestSender(
             self.factory, ZmqEndpoint(ZmqEndpointType.connect, "inproc://#1"))
 
+    def test_addEndpoints(self):
+        r = ZmqTestReceiver(
+            self.factory, ZmqEndpoint(ZmqEndpointType.bind, "inproc://#1"))
+        r.addEndpoints([ZmqEndpoint(ZmqEndpointType.bind, "inproc://#2"),
+            ZmqEndpoint(ZmqEndpointType.bind, "inproc://#3")])
+
+        s = ZmqTestSender(
+            self.factory, ZmqEndpoint(ZmqEndpointType.connect, "inproc://#3"))
+
+        s.send('abcd')
+
+        def check(ignore):
+            result = getattr(r, 'messages', [])
+            expected = [['abcd']]
+            self.failUnlessEqual(
+                result, expected, "Message should have been received")
+
+        return _wait(0.01).addCallback(check)
+
     def test_repr(self):
         expected = ("ZmqTestReceiver(ZmqFactory(), "
                     "[ZmqEndpoint(type='bind', address='inproc://#1')])")

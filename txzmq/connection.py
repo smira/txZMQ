@@ -80,13 +80,20 @@ class ZmqConnection(object):
             self.socket.setsockopt(constants.IDENTITY, self.identity)
 
         if endpoint:
-            self.add_endpoints([endpoint])
+            self.addEndpoints([endpoint])
 
         self.factory.connections.add(self)
 
         self.factory.reactor.addReader(self)
 
-    def add_endpoints(self, endpoints):
+    def addEndpoints(self, endpoints):
+        """
+        Add more connection endpoints. Connection may have
+        many endpoints, mixing protocols and types.
+
+        @param endpoints: list of endpoints to add
+        @type endpoints: C{list}
+        """
         self.endpoints.extend(endpoints)
         self._connectOrBind(endpoints)
 
