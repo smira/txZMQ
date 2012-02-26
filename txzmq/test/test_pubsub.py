@@ -71,8 +71,9 @@ class ZmqConnectionTestCase(unittest.TestCase):
     def test_send_recv_multiple_endpoints(self):
         r = ZmqTestSubConnection(
             self.factory,
-            ZmqEndpoint(ZmqEndpointType.bind, "tcp://127.0.0.1:5556"),
-            ZmqEndpoint(ZmqEndpointType.bind, "inproc://endpoint"))
+            ZmqEndpoint(ZmqEndpointType.bind, "tcp://127.0.0.1:5556"))
+        r.addEndpoints(
+                [ZmqEndpoint(ZmqEndpointType.bind, "inproc://endpoint")])
         s1 = ZmqPubConnection(
             self.factory,
             ZmqEndpoint(ZmqEndpointType.connect, "tcp://127.0.0.1:5556"))
