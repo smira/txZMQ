@@ -1,0 +1,4 @@
+* Andrey Smirnov <me@smira.ru>
+* Duncan McGreggor <oubiwann@gmail.com>
+* Erik Allik <eallik@gmail.com>
+* Guillermo Gonzalez
