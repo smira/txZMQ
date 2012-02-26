@@ -16,7 +16,7 @@ env:
 env-clean: clean env
 
 check: env
-	env/bin/pep8 --repeat --ignore=E501 txzmq
+	env/bin/pep8 --repeat txzmq
 	env/bin/pyflakes txzmq
 
 check-clean: clean check
