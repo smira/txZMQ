@@ -32,6 +32,30 @@ class ZmqREQREPConnectionTestCase(unittest.TestCase):
                 ZmqEndpoint(ZmqEndpointType.bind, "ipc://#3"))
         self.s = ZmqREQConnection(self.factory,
                 ZmqEndpoint(ZmqEndpointType.connect, "ipc://#3"))
+
+    def tearDown(self):
+        ZmqREQConnection.identity = None
+        self.factory.shutdown()
+
+    def test_getNextId(self):
+        self.failUnlessEqual([], self.s._uuids)
+        id1 = self.s._getNextId()
+        self.failUnlessEqual(self.s.UUID_POOL_GEN_SIZE - 1, len(self.s._uuids))
+        self.failUnlessIsInstance(id1, str)
+
+        id2 = self.s._getNextId()
+        self.failUnlessIsInstance(id2, str)
+
+        self.failIfEqual(id1, id2)
+
+        ids = [self.s._getNextId() for _ in range(1000)]
+        self.failUnlessEqual(len(ids), len(set(ids)))
+
+    def test_releaseId(self):
+        self.s._releaseId(self.s._getNextId())
+        self.failUnlessEqual(self.s.UUID_POOL_GEN_SIZE, len(self.s._uuids))
+
+    def test_send_recv(self):
         self.count = 0
 
         def get_next_id():
@@ -40,11 +64,6 @@ class ZmqREQREPConnectionTestCase(unittest.TestCase):
 
         self.s._getNextId = get_next_id
 
-    def tearDown(self):
-        ZmqREQConnection.identity = None
-        self.factory.shutdown()
-
-    def test_send_recv(self):
         self.s.sendMsg('aaa', 'aab')
         self.s.sendMsg('bbb')
 
@@ -82,5 +101,6 @@ class ZmqREQREPConnectionTestCase(unittest.TestCase):
         """The request dict is cleanedup properly."""
         def check(ignore):
             self.assertEqual(self.s._requests, {})
+            self.failUnlessEqual(self.s.UUID_POOL_GEN_SIZE, len(self.s._uuids))
 
         return self.s.sendMsg('aaa').addCallback(check)

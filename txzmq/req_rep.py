@@ -31,11 +31,29 @@ class ZmqREQConnection(ZmqConnection):
     def _getNextId(self):
         """
         Returns an unique id.
+
+        By default, generates pool of UUID in increments
+        of C{UUID_POOL_GEN_SIZE}. Could be overridden to
+        provide custom ID generation.
+
+        @return: generated unique "on the wire" message ID
+        @rtype: C{str}
         """
         if not self._uuids:
-            for _ in range(self.UUID_POOL_GEN_SIZE):
-                self._uuids.append(str(uuid.uuid4()))
+            self._uuids.extend(str(uuid.uuid4())
+                    for _ in range(self.UUID_POOL_GEN_SIZE))
         return self._uuids.pop()
+
+    def _releaseId(self, msg_id):
+        """
+        Release message ID to the pool.
+
+        @param msg_id: message ID, no longer on the wire
+        @type msg_id: C{str}
+        """
+        self._uuids.append(msg_id)
+        if len(self._uuids) > 2 * self.UUID_POOL_GEN_SIZE:
+            self._uuids[-self.UUID_POOL_GEN_SIZE:] = []
 
     def sendMsg(self, *message_parts):
         """
@@ -58,11 +76,8 @@ class ZmqREQConnection(ZmqConnection):
         """
         msg_id, _, msg = message[0], message[1], message[2:]
         d = self._requests.pop(msg_id)
+        self._releaseId(msg_id)
         d.callback(msg)
-
-        self._uuids.append(msg_id)
-        if len(self._uuids) > 2 * self.UUID_POOL_GEN_SIZE:
-            self._uuids[-self.UUID_POOL_GEN_SIZE:] = []
 
 
 class ZmqREPConnection(ZmqConnection):
