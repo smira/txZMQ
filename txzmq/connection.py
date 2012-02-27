@@ -58,10 +58,15 @@ class ZmqConnection(object):
         """
         Constructor.
 
+        One endpoint is passed to the constructor, more could be added
+        via call to C{addEndpoints}.
+
         @param factory: ZeroMQ Twisted factory
         @type factory: L{ZmqFactory}
-        @param endpoints: ZeroMQ addresses for connect/bind
-        @type endpoints: C{list} of L{ZmqEndpoint}
+        @param endpoint: ZeroMQ address for connect/bind
+        @type endpoint: C{list} of L{ZmqEndpoint}
+        @param identity: socket identity (ZeroMQ)
+        @type identity: C{str}
         """
         self.factory = factory
         self.endpoints = []
