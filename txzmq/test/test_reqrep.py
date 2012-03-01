@@ -13,11 +13,11 @@ from txzmq.req_rep import ZmqREPConnection, ZmqREQConnection
 class ZmqTestREPConnection(ZmqREPConnection):
     identity = 'service'
 
-    def gotMessage(self, message_id, *message_parts):
+    def gotMessage(self, messageId, *messageParts):
         if not hasattr(self, 'messages'):
             self.messages = []
-        self.messages.append([message_id, message_parts])
-        self.reply(message_id, *message_parts)
+        self.messages.append([messageId, messageParts])
+        self.reply(messageId, *messageParts)
 
 
 class ZmqREQREPConnectionTestCase(unittest.TestCase):

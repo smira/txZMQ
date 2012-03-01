@@ -44,28 +44,28 @@ class ZmqREQConnection(ZmqConnection):
                     for _ in range(self.UUID_POOL_GEN_SIZE))
         return self._uuids.pop()
 
-    def _releaseId(self, msg_id):
+    def _releaseId(self, msgId):
         """
         Release message ID to the pool.
 
-        @param msg_id: message ID, no longer on the wire
-        @type msg_id: C{str}
+        @param msgId: message ID, no longer on the wire
+        @type msgId: C{str}
         """
-        self._uuids.append(msg_id)
+        self._uuids.append(msgId)
         if len(self._uuids) > 2 * self.UUID_POOL_GEN_SIZE:
             self._uuids[-self.UUID_POOL_GEN_SIZE:] = []
 
-    def sendMsg(self, *message_parts):
+    def sendMsg(self, *messageParts):
         """
         Send L{message} with specified L{tag}.
 
-        @param message_parts: message data
-        @type message: C{tuple}
+        @param messageParts: message data
+        @type messageParts: C{tuple}
         """
         d = defer.Deferred()
-        message_id = self._getNextId()
-        self._requests[message_id] = d
-        self.send([message_id, ''] + list(message_parts))
+        messageId = self._getNextId()
+        self._requests[messageId] = d
+        self.send([messageId, ''] + list(messageParts))
         return d
 
     def messageReceived(self, message):
@@ -74,9 +74,9 @@ class ZmqREQConnection(ZmqConnection):
 
         @param message: message data
         """
-        msg_id, _, msg = message[0], message[1], message[2:]
-        d = self._requests.pop(msg_id)
-        self._releaseId(msg_id)
+        msgId, _, msg = message[0], message[1], message[2:]
+        d = self._requests.pop(msgId)
+        self._releaseId(msgId)
         d.callback(msg)
 
 
@@ -91,19 +91,19 @@ class ZmqREPConnection(ZmqConnection):
 
     def __init__(self, factory, endpoint=None):
         ZmqConnection.__init__(self, factory, endpoint)
-        self._routing_info = {}  # keep track of routing info
+        self._routingInfo = {}  # keep track of routing info
 
-    def reply(self, message_id, *message_parts):
+    def reply(self, messageId, *messageParts):
         """
         Send L{message} with specified L{tag}.
 
-        @param message_id: message uuid
-        @type message_id: C{str}
+        @param messageId: message uuid
+        @type messageId: C{str}
         @param message: message data
         @type message: C{str}
         """
-        routing_info = self._routing_info.pop(message_id)
-        self.send(routing_info + [message_id, ''] + list(message_parts))
+        routingInfo = self._routingInfo.pop(messageId)
+        self.send(routingInfo + [messageId, ''] + list(messageParts))
 
     def messageReceived(self, message):
         """
@@ -113,17 +113,19 @@ class ZmqREPConnection(ZmqConnection):
         """
         i = message.index('')
         assert i > 0
-        (routing_info, msg_id, payload) = (
+        (routingInfo, msgId, payload) = (
             message[:i - 1], message[i - 1], message[i + 1:])
-        msg_parts = payload[0:]
-        self._routing_info[msg_id] = routing_info
-        self.gotMessage(msg_id, *msg_parts)
+        msgParts = payload[0:]
+        self._routingInfo[msgId] = routingInfo
+        self.gotMessage(msgId, *msgParts)
 
-    def gotMessage(self, message_id, *message_parts):
+    def gotMessage(self, messageId, *messageParts):
         """
         Called on incoming message.
 
-        @param message_parts: message data
+        @param messageId: message uuid
+        @type messageId: C{str}
+        @param messageParts: message data
         @param tag: message tag
         """
         raise NotImplementedError(self)
