@@ -16,7 +16,8 @@ class ZmqREQConnection(ZmqConnection):
     A REQ connection.
 
     This is implemented with an underlying DEALER socket, even though
-    semantics are closed to REQ socket.
+    semantics are closer to REQ socket.
+
     """
     socketType = constants.DEALER
 
