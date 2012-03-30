@@ -117,6 +117,10 @@ class ZmqConnection(object):
 
         self.factory = None
 
+        if self.scheduled_doRead is not None:
+            self.scheduled_doRead.cancel()
+            self.scheduled_doRead = None
+
     def __repr__(self):
         return "%s(%r, %r)" % (
             self.__class__.__name__, self.factory, self.endpoints)
@@ -149,9 +153,6 @@ class ZmqConnection(object):
         log.err(reason, "Connection to ZeroMQ lost in %r" % (self))
         if self.factory:
             self.factory.reactor.removeReader(self)
-        if self.scheduled_doRead is not None:
-            self.scheduled_doRead.cancel()
-            self.scheduled_doRead = None
 
     def _readMultipart(self):
         """
