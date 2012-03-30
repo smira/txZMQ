@@ -3,7 +3,7 @@ import sys
 
 setup(
         name='txZMQ',
-        version='0.4.0',
+        version='0.5.0',
         packages=['txzmq','txzmq.test'],
         license='GPLv2',
         author='Andrey Smirnov',
