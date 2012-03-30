@@ -17,7 +17,7 @@ Requirements
 
 Non-Python library required:
 
-* ØMQ library >= 2.1 (heavily tested with 2.1.4)
+* ØMQ library >= 2.1 (heavily tested with 2.1.10)
 
 Python packages required:
 
@@ -46,6 +46,21 @@ Request/reply pattern is achieved via DEALER/ROUTER sockets and classes ``ZmqREQ
 ``ZmqREPConection``, which provide REQ-REP like semantics in asynchronous case.
 
 Other socket types could be easily derived from ``ZmqConnection``.
+
+Upgrading from 0.3.x
+--------------------
+
+If you're upgrading from version 0.3.1 and earlier, please apply following
+changes to your code:
+
+* root package name was changed from ``txZMQ`` to ``txzmq``, adjust your
+  imports accordingly;
+* ``ZmqEndpointType.Connect`` has been renamed to ``ZmqEndpointType.connect``;
+* ``ZmqEndpointType.Bind`` has been renamed to ``ZmqEndpointType.bind``;
+* ``ZmqConnection.__init__`` has been changed to accept keyword arguments
+  instead of list of endpoints; if you were using one endpoint, no changes
+  are required; if using multiple endpoints, please look for ``add_endpoints``
+  method.
 
 
 Example
