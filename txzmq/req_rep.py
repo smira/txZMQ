@@ -23,8 +23,8 @@ class ZmqREQConnection(ZmqConnection):
     # the number of new UUIDs to generate when the pool runs out of them
     UUID_POOL_GEN_SIZE = 5
 
-    def __init__(self, factory, endpoint=None):
-        ZmqConnection.__init__(self, factory, endpoint)
+    def __init__(self, *args, **kwargs):
+        ZmqConnection.__init__(self, *args, **kwargs)
         self._requests = {}
         self._uuids = []
 
@@ -89,8 +89,8 @@ class ZmqREPConnection(ZmqConnection):
     """
     socketType = constants.ROUTER
 
-    def __init__(self, factory, endpoint=None):
-        ZmqConnection.__init__(self, factory, endpoint)
+    def __init__(self, *args, **kwargs):
+        ZmqConnection.__init__(self, *args, **kwargs)
         self._routingInfo = {}  # keep track of routing info
 
     def reply(self, messageId, *messageParts):

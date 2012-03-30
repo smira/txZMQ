@@ -1,7 +1,7 @@
 """
 Tests for L{txzmq.req_rep}.
 """
-from twisted.internet import defer
+from twisted.internet import defer, reactor
 from twisted.trial import unittest
 
 from txzmq.connection import ZmqEndpoint, ZmqEndpointType
@@ -11,8 +11,6 @@ from txzmq.req_rep import ZmqREPConnection, ZmqREQConnection
 
 
 class ZmqTestREPConnection(ZmqREPConnection):
-    identity = 'service'
-
     def gotMessage(self, messageId, *messageParts):
         if not hasattr(self, 'messages'):
             self.messages = []
@@ -22,19 +20,18 @@ class ZmqTestREPConnection(ZmqREPConnection):
 
 class ZmqREQREPConnectionTestCase(unittest.TestCase):
     """
-    Test case for L{zmq.twisted.connection.Connection}.
+    Test case for L{zmq.req_rep.ZmqREPConnection}.
     """
 
     def setUp(self):
         self.factory = ZmqFactory()
-        ZmqREQConnection.identity = 'client'
         self.r = ZmqTestREPConnection(self.factory,
                 ZmqEndpoint(ZmqEndpointType.bind, "ipc://#3"))
         self.s = ZmqREQConnection(self.factory,
-                ZmqEndpoint(ZmqEndpointType.connect, "ipc://#3"))
+                ZmqEndpoint(ZmqEndpointType.connect, "ipc://#3"),
+                identity='client')
 
     def tearDown(self):
-        ZmqREQConnection.identity = None
         self.factory.shutdown()
 
     def test_getNextId(self):
@@ -95,12 +92,72 @@ class ZmqREQREPConnectionTestCase(unittest.TestCase):
 
             d.addCallback(check_response, msg_id)
             deferreds.append(d)
-        return defer.DeferredList(deferreds)
+        return defer.DeferredList(deferreds, fireOnOneErrback=True)
 
-    def xtest_cleanup_requests(self):
+    def test_cleanup_requests(self):
         """The request dict is cleanedup properly."""
         def check(ignore):
             self.assertEqual(self.s._requests, {})
             self.failUnlessEqual(self.s.UUID_POOL_GEN_SIZE, len(self.s._uuids))
 
         return self.s.sendMsg('aaa').addCallback(check)
+
+
+class ZmqReplyConnection(ZmqREPConnection):
+    def messageReceived(self, message):
+        if not hasattr(self, 'message_count'):
+            self.message_count = 0
+
+        if message[1] == 'stop':
+            reactor.callLater(0, self.send, ['master', 'exit'])
+        else:
+            self.message_count += 1
+            self.send(['master', 'event'])
+            for _ in xrange(2):
+                reactor.callLater(0, self.send, ['master', 'event'])
+
+
+class ZmqRequestConnection(ZmqREQConnection):
+    def messageReceived(self, message):
+        if not hasattr(self, 'message_count'):
+            self.message_count = 0
+        if message[0] == 'event':
+            self.message_count += 1
+        elif message[0] == 'exit':
+            self.d.callback(None)
+        else:
+            assert False
+
+
+class ZmqREQREPTwoFactoryConnectionTestCase(unittest.TestCase):
+    """
+    Test case for L{zmq.req_rep} with REQ/REP in two factories.
+    """
+
+    REQUEST_COUNT = 10000
+
+    def setUp(self):
+        self.factory1 = ZmqFactory()
+        self.factory2 = ZmqFactory()
+        self.c1 = ZmqRequestConnection(self.factory1,
+                ZmqEndpoint(ZmqEndpointType.connect, "tcp://127.0.0.1:7859"),
+                identity='master')
+        self.c2 = ZmqReplyConnection(self.factory2,
+                ZmqEndpoint(ZmqEndpointType.bind, "tcp://127.0.0.1:7859"),
+                identity='slave')
+        self.c1.d = defer.Deferred()
+
+    def tearDown(self):
+        self.factory2.shutdown()
+        self.factory1.shutdown()
+
+    def test_start(self):
+        for _ in xrange(self.REQUEST_COUNT):
+            reactor.callLater(0, self.c1.send, 'req')
+        reactor.callLater(0, self.c1.send, 'stop')
+
+        def checkResults(_):
+            self.failUnlessEqual(self.c1.message_count, 3 * self.REQUEST_COUNT)
+            self.failUnlessEqual(self.c2.message_count, self.REQUEST_COUNT)
+
+        return self.c1.d.addCallback(checkResults)
