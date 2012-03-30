@@ -9,6 +9,7 @@ from zmq.core.socket import Socket
 from zope.interface import implements
 
 from twisted.internet.interfaces import IFileDescriptor, IReadDescriptor
+from twisted.internet import reactor
 from twisted.python import log
 
 
@@ -74,6 +75,7 @@ class ZmqConnection(object):
         self.socket = Socket(factory.context, self.socketType)
         self.queue = deque()
         self.recv_parts = []
+        self.scheduled_doRead = None
 
         self.fd = self.socket.getsockopt(constants.FD)
         self.socket.setsockopt(constants.LINGER, factory.lingerPeriod)
@@ -147,6 +149,9 @@ class ZmqConnection(object):
         log.err(reason, "Connection to ZeroMQ lost in %r" % (self))
         if self.factory:
             self.factory.reactor.removeReader(self)
+        if self.scheduled_doRead is not None:
+            self.scheduled_doRead.cancel()
+            self.scheduled_doRead = None
 
     def _readMultipart(self):
         """
@@ -164,11 +169,30 @@ class ZmqConnection(object):
         """
         Some data is available for reading on your descriptor.
 
-        ZeroMQ is signalling that we should process some events.
+        ZeroMQ is signalling that we should process some events,
+        we're starting to send queued messages and to receive
+        incoming messages.
 
         Part of L{IReadDescriptor}.
         """
+        if self.scheduled_doRead is not None:
+            if not self.scheduled_doRead.called:
+                self.scheduled_doRead.cancel()
+            self.scheduled_doRead = None
+
         events = self.socket.getsockopt(constants.EVENTS)
+        if (events & constants.POLLOUT) == constants.POLLOUT:
+            while self.queue:
+                try:
+                    self.socket.send(
+                        self.queue[0][1], constants.NOBLOCK | self.queue[0][0])
+                except error.ZMQError as e:
+                    if e.errno == constants.EAGAIN:
+                        break
+                    self.queue.popleft()
+                    raise e
+
+                self.queue.popleft()
         if (events & constants.POLLIN) == constants.POLLIN:
             while True:
                 if self.factory is None:  # disconnected
@@ -182,23 +206,6 @@ class ZmqConnection(object):
                     raise e
 
                 log.callWithLogger(self, self.messageReceived, message)
-        if (events & constants.POLLOUT) == constants.POLLOUT:
-            self._startWriting()
-
-    def _startWriting(self):
-        """
-        Start delivering messages from the queue.
-        """
-        while self.queue:
-            try:
-                self.socket.send(
-                    self.queue[0][1], constants.NOBLOCK | self.queue[0][0])
-            except error.ZMQError as e:
-                if e.errno == constants.EAGAIN:
-                    break
-                self.queue.popleft()
-                raise e
-            self.queue.popleft()
 
     def logPrefix(self):
         """
@@ -221,11 +228,8 @@ class ZmqConnection(object):
             self.queue.extend([(constants.SNDMORE, m) for m in message[:-1]])
             self.queue.append((0, message[-1]))
 
-        # this is crazy hack: if we make such call, zeromq happily signals
-        # available events on other connections
-        self.socket.getsockopt(constants.EVENTS)
-
-        self._startWriting()
+        if self.scheduled_doRead is None:
+            self.scheduled_doRead = reactor.callLater(0, self.doRead)
 
     def messageReceived(self, message):
         """
