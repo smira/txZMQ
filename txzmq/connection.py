@@ -150,7 +150,6 @@ class ZmqConnection(object):
                        L{error.ConnectionDone} are of special note, but the
                        failure may be of other classes as well.
         """
-        log.err(reason, "Connection to ZeroMQ lost in %r" % (self))
         if self.factory:
             self.factory.reactor.removeReader(self)
 
