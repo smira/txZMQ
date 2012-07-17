@@ -79,10 +79,14 @@ class ZmqConnection(object):
 
         self.fd = self.socket.getsockopt(constants.FD)
         self.socket.setsockopt(constants.LINGER, factory.lingerPeriod)
-        self.socket.setsockopt(
-            constants.MCAST_LOOP, int(self.allowLoopbackMulticast))
+        try:
+            self.socket.setsockopt(
+                constants.MCAST_LOOP, int(self.allowLoopbackMulticast))
+            self.socket.setsockopt(constants.HWM, self.highWaterMark)
+        except:
+            self.socket.setsockopt(constants.SNDHWM, self.highWaterMark)
+            self.socket.setsockopt(constants.RCVHWM, self.highWaterMark)
         self.socket.setsockopt(constants.RATE, self.multicastRate)
-        self.socket.setsockopt(constants.HWM, self.highWaterMark)
         if self.identity is not None:
             self.socket.setsockopt(constants.IDENTITY, self.identity)
 
