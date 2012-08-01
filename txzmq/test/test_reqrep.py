@@ -25,11 +25,10 @@ class ZmqREQREPConnectionTestCase(unittest.TestCase):
 
     def setUp(self):
         self.factory = ZmqFactory()
-        self.r = ZmqTestREPConnection(self.factory,
-                ZmqEndpoint(ZmqEndpointType.bind, "ipc://#3"))
-        self.s = ZmqREQConnection(self.factory,
-                ZmqEndpoint(ZmqEndpointType.connect, "ipc://#3"),
-                identity='client')
+        b = ZmqEndpoint(ZmqEndpointType.bind, "ipc://#3")
+        self.r = ZmqTestREPConnection(self.factory, b)
+        c = ZmqEndpoint(ZmqEndpointType.connect, "ipc://#3")
+        self.s = ZmqREQConnection(self.factory, c, identity='client')
 
     def tearDown(self):
         self.factory.shutdown()
@@ -139,12 +138,10 @@ class ZmqREQREPTwoFactoryConnectionTestCase(unittest.TestCase):
     def setUp(self):
         self.factory1 = ZmqFactory()
         self.factory2 = ZmqFactory()
-        self.c1 = ZmqRequestConnection(self.factory1,
-                ZmqEndpoint(ZmqEndpointType.connect, "tcp://127.0.0.1:7859"),
-                identity='master')
-        self.c2 = ZmqReplyConnection(self.factory2,
-                ZmqEndpoint(ZmqEndpointType.bind, "tcp://127.0.0.1:7859"),
-                identity='slave')
+        c = ZmqEndpoint(ZmqEndpointType.connect, "tcp://127.0.0.1:7859")
+        self.c1 = ZmqRequestConnection(self.factory1, c, identity='master')
+        b = ZmqEndpoint(ZmqEndpointType.bind, "tcp://127.0.0.1:7859")
+        self.c2 = ZmqReplyConnection(self.factory2, b, identity='slave')
         self.c1.d = defer.Deferred()
 
     def tearDown(self):
