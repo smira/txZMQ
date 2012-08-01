@@ -35,7 +35,7 @@ class ZmqConnectionTestCase(unittest.TestCase):
             self.factory, ZmqEndpoint(ZmqEndpointType.bind, "ipc://test-sock"))
         s = ZmqPubConnection(
             self.factory, ZmqEndpoint(ZmqEndpointType.connect,
-            "ipc://test-sock"))
+                                      "ipc://test-sock"))
 
         r.subscribe('tag')
         s.publish('xyz', 'different-tag')
@@ -72,8 +72,8 @@ class ZmqConnectionTestCase(unittest.TestCase):
         r = ZmqTestSubConnection(
             self.factory,
             ZmqEndpoint(ZmqEndpointType.bind, "tcp://127.0.0.1:5556"))
-        r.addEndpoints(
-                [ZmqEndpoint(ZmqEndpointType.bind, "inproc://endpoint")])
+        r.addEndpoints([ZmqEndpoint(ZmqEndpointType.bind,
+                                    "inproc://endpoint")])
         s1 = ZmqPubConnection(
             self.factory,
             ZmqEndpoint(ZmqEndpointType.connect, "tcp://127.0.0.1:5556"))
