@@ -42,7 +42,7 @@ example, special descendants of the ``ZmqConnection`` class,
 ``ZmqPubConnection`` and ``ZmqSubConnection``, add special nice features for
 PUB/SUB sockets.
 
-Request/reply pattern is achieved via DEALER/ROUTER sockets and classes ``ZmqREQConnection``, 
+Request/reply pattern is achieved via DEALER/ROUTER sockets and classes ``ZmqREQConnection``,
 ``ZmqREPConection``, which provide REQ-REP like semantics in asynchronous case.
 
 Other socket types could be easily derived from ``ZmqConnection``.
