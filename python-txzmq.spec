@@ -27,7 +27,7 @@ Twisted event loop (reactor).
 %setup -q -n txZMQ-%{version}
 
 %build
-%{__python} setup.py build 
+%{__python} setup.py build
 
 %install
 %{__python} setup.py install -O1 --skip-build --root $RPM_BUILD_ROOT
@@ -37,7 +37,7 @@ Twisted event loop (reactor).
 %defattr(-,root,root,-)
 %doc README.rst LICENSE.txt
 
-%{python_sitelib}/* 
+%{python_sitelib}/*
 
 %changelog
 * Thu Apr 05 2012 Ralph Bean <rbean@redhat.com> 0.3.1-1

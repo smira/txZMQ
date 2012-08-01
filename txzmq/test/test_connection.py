@@ -52,7 +52,7 @@ class ZmqConnectionTestCase(unittest.TestCase):
         r = ZmqTestReceiver(
             self.factory, ZmqEndpoint(ZmqEndpointType.bind, "inproc://#1"))
         r.addEndpoints([ZmqEndpoint(ZmqEndpointType.bind, "inproc://#2"),
-            ZmqEndpoint(ZmqEndpointType.bind, "inproc://#3")])
+                        ZmqEndpoint(ZmqEndpointType.bind, "inproc://#3")])
 
         s = ZmqTestSender(
             self.factory, ZmqEndpoint(ZmqEndpointType.connect, "inproc://#3"))
@@ -93,10 +93,10 @@ class ZmqConnectionTestCase(unittest.TestCase):
     def test_send_recv_tcp(self):
         r = ZmqTestReceiver(
             self.factory, ZmqEndpoint(ZmqEndpointType.bind,
-            "tcp://127.0.0.1:5555"))
+                                      "tcp://127.0.0.1:5555"))
         s = ZmqTestSender(
             self.factory, ZmqEndpoint(ZmqEndpointType.connect,
-            "tcp://127.0.0.1:5555"))
+                                      "tcp://127.0.0.1:5555"))
 
         for i in xrange(100):
             s.send(str(i))
@@ -112,10 +112,10 @@ class ZmqConnectionTestCase(unittest.TestCase):
     def test_send_recv_tcp_large(self):
         r = ZmqTestReceiver(
             self.factory, ZmqEndpoint(ZmqEndpointType.bind,
-            "tcp://127.0.0.1:5555"))
+                                      "tcp://127.0.0.1:5555"))
         s = ZmqTestSender(
             self.factory, ZmqEndpoint(ZmqEndpointType.connect,
-            "tcp://127.0.0.1:5555"))
+                                      "tcp://127.0.0.1:5555"))
 
         s.send(["0" * 10000, "1" * 10000])
 
