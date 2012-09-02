@@ -1,7 +1,10 @@
 """
 Tests for L{txzmq.pubsub}.
 """
+import sys
+
 from twisted.trial import unittest
+from zmq import ZMQError
 
 from txzmq.connection import ZmqEndpoint, ZmqEndpointType
 from txzmq.factory import ZmqFactory
@@ -51,10 +54,17 @@ class ZmqConnectionTestCase(unittest.TestCase):
         return _wait(0.01).addCallback(check)
 
     def test_send_recv_pgm(self):
-        r = ZmqTestSubConnection(self.factory, ZmqEndpoint(
-            ZmqEndpointType.bind, "epgm://127.0.0.1;239.192.1.1:5556"))
-        s = ZmqPubConnection(self.factory, ZmqEndpoint(
-            ZmqEndpointType.connect, "epgm://127.0.0.1;239.192.1.1:5556"))
+        try:
+            r = ZmqTestSubConnection(self.factory, ZmqEndpoint(
+                ZmqEndpointType.bind, "epgm://127.0.0.1;239.192.1.1:5556"))
+            s = ZmqPubConnection(self.factory, ZmqEndpoint(
+                ZmqEndpointType.connect, "epgm://127.0.0.1;239.192.1.1:5556"))
+        except ZMQError as e:
+            if e.strerror == "Protocol not supported":
+                print >> sys.stderr, "EPGM not supported"
+                return
+            else:
+                raise
 
         r.subscribe('tag')
         s.publish('xyz', 'different-tag')
