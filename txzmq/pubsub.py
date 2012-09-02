@@ -54,7 +54,7 @@ class ZmqSubConnection(ZmqConnection):
 
         @param message: message data
         """
-        if len(message) == 2:
+        if len(message) == 2:  # XXX: this will be a bug with a 2 char string
             # compatibility receiving of tag as first part
             # of multi-part message
             self.gotMessage(message[1], message[0])
