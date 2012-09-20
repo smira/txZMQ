@@ -75,6 +75,7 @@ class ZmqConnection(object):
         self.socket = Socket(factory.context, self.socketType)
         self.queue = deque()
         self.recv_parts = []
+        self.scheduled_doRead = None
 
         self.fd = self.socket.getsockopt(constants.FD)
         self.socket.setsockopt(constants.LINGER, factory.lingerPeriod)
@@ -115,6 +116,10 @@ class ZmqConnection(object):
         self.socket = None
 
         self.factory = None
+
+        if self.scheduled_doRead is not None:
+            self.scheduled_doRead.cancel()
+            self.scheduled_doRead = None
 
     def __repr__(self):
         return "%s(%r, %r)" % (
@@ -165,13 +170,29 @@ class ZmqConnection(object):
         Some data is available for reading on your descriptor.
 
         ZeroMQ is signalling that we should process some events,
-        we're starting to to receive incoming messages.
+        we're starting to send queued messages and to receive
+        incoming messages.
 
         Part of L{IReadDescriptor}.
         """
+        if self.scheduled_doRead is not None:
+            if not self.scheduled_doRead.called:
+                self.scheduled_doRead.cancel()
+            self.scheduled_doRead = None
 
         events = self.socket.getsockopt(constants.EVENTS)
+        if (events & constants.POLLOUT) == constants.POLLOUT:
+            while self.queue:
+                try:
+                    self.socket.send(
+                        self.queue[0][1], constants.NOBLOCK | self.queue[0][0])
+                except error.ZMQError as e:
+                    if e.errno == constants.EAGAIN:
+                        break
+                    self.queue.popleft()
+                    raise e
 
+                self.queue.popleft()
         if (events & constants.POLLIN) == constants.POLLIN:
             while True:
                 if self.factory is None:  # disconnected
@@ -202,11 +223,13 @@ class ZmqConnection(object):
         @param message: message data
         """
         if not hasattr(message, '__iter__'):
-            self.socket.send(message, constants.NOBLOCK)
+            self.queue.append((0, message))
         else:
-            for m in message[:-1]:
-                self.socket.send(m, constants.NOBLOCK | constants.SNDMORE)
-            self.socket.send(message[-1], constants.NOBLOCK)
+            self.queue.extend([(constants.SNDMORE, m) for m in message[:-1]])
+            self.queue.append((0, message[-1]))
+
+        if self.scheduled_doRead is None:
+            self.scheduled_doRead = reactor.callLater(0, self.doRead)
 
     def messageReceived(self, message):
         """
