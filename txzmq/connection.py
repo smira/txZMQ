@@ -91,6 +91,7 @@ class ZmqConnection(object):
         self.factory.connections.add(self)
 
         self.factory.reactor.addReader(self)
+        self.doRead()
 
     def addEndpoints(self, endpoints):
         """
@@ -169,7 +170,6 @@ class ZmqConnection(object):
 
         Part of L{IReadDescriptor}.
         """
-
         events = self.socket.getsockopt(constants.EVENTS)
 
         if (events & constants.POLLIN) == constants.POLLIN:
