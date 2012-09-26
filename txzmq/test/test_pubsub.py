@@ -1,8 +1,6 @@
 """
 Tests for L{txzmq.pubsub}.
 """
-import zmq
-
 from twisted.trial import unittest
 
 from txzmq.connection import ZmqEndpoint, ZmqEndpointType

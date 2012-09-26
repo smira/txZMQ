@@ -9,7 +9,6 @@ from zmq.core.socket import Socket
 from zope.interface import implements
 
 from twisted.internet.interfaces import IFileDescriptor, IReadDescriptor
-from twisted.internet import reactor
 from twisted.python import log
 
 
