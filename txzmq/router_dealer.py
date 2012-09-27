@@ -53,7 +53,7 @@ class ZmqBase(ZmqConnection):
 
         @param message: message data
         """
-        self.gotMessage(message)
+        self.gotMessage(*message)
 
     def gotMessage(self, *args, **kwargs):
         raise NotImplementedError
@@ -80,4 +80,4 @@ class ZmqRouterConnection(ZmqBase):
 
     def messageReceived(self, message):
         sender_id = message.pop(0)
-        self.gotMessage(sender_id, message)
+        self.gotMessage(sender_id, *message)
