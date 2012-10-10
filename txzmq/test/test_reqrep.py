@@ -10,6 +10,15 @@ from txzmq.test import _wait
 from txzmq.req_rep import ZmqREPConnection, ZmqREQConnection
 
 
+def _detect_zeromq2():
+    """ Return true if pyzmq was built against zeromq2.x.
+
+    txZMQ currently supports zeromq2.x and has partial support for zeromq3.x.
+    """
+    import zmq.core.version
+    return zmq.core.version.zmq_version_info() == 2
+
+
 class ZmqTestREPConnection(ZmqREPConnection):
     def gotMessage(self, messageId, *messageParts):
         if not hasattr(self, 'messages'):
@@ -80,6 +89,9 @@ class ZmqREQREPConnectionTestCase(unittest.TestCase):
         d.addCallback(check_response)
         return d
 
+    if not _detect_zeromq2():
+        test_send_recv_reply.skip = "REQ/REP unsupported for zeromq3.x"
+
     def test_lot_send_recv_reply(self):
         deferreds = []
         for i in range(10):
@@ -93,6 +105,9 @@ class ZmqREQREPConnectionTestCase(unittest.TestCase):
             deferreds.append(d)
         return defer.DeferredList(deferreds, fireOnOneErrback=True)
 
+    if not _detect_zeromq2():
+        test_lot_send_recv_reply.skip = "REQ/REP unsupported for zeromq3.x"
+
     def test_cleanup_requests(self):
         """The request dict is cleanedup properly."""
         def check(ignore):
@@ -100,6 +115,9 @@ class ZmqREQREPConnectionTestCase(unittest.TestCase):
             self.failUnlessEqual(self.s.UUID_POOL_GEN_SIZE, len(self.s._uuids))
 
         return self.s.sendMsg('aaa').addCallback(check)
+
+    if not _detect_zeromq2():
+        test_cleanup_requests.skip = "REQ/REP unsupported for zeromq3.x"
 
 
 class ZmqReplyConnection(ZmqREPConnection):
@@ -158,3 +176,6 @@ class ZmqREQREPTwoFactoryConnectionTestCase(unittest.TestCase):
             self.failUnlessEqual(self.c2.message_count, self.REQUEST_COUNT)
 
         return self.c1.d.addCallback(checkResults)
+
+    if not _detect_zeromq2():
+        test_start.skip = "REQ/REP currently unsupported for zeromq3.x"

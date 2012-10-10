@@ -9,6 +9,15 @@ from txzmq.factory import ZmqFactory
 from txzmq.router_dealer import ZmqRouterConnection, ZmqDealerConnection
 
 
+def _detect_zeromq2():
+    """ Return true if pyzmq was built against zeromq2.x.
+
+    txZMQ currently supports zeromq2.x and has partial support for zeromq3.x.
+    """
+    import zmq.core.version
+    return zmq.core.version.zmq_version_info() == 2
+
+
 class ZmqTestRouterConnection(ZmqRouterConnection):
     message_count = 0
 
@@ -70,3 +79,6 @@ class ZmqRouterDealerTwoFactoryConnectionTestCase(unittest.TestCase):
             self.failUnlessEqual(self.router.message_count, self.REQUEST_COUNT)
 
         return self.dealer.d.addCallback(checkResults)
+
+    if not _detect_zeromq2():
+        test_start.skip = "ROUTER/DEALER currently unsupported for zeromq3.x"
