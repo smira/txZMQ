@@ -13,7 +13,7 @@ from twisted.python import log
 
 
 # Patch zmq.core.constants to support both zeromq2 and zeromq3
-ZMQ3 = version.zmq_version_info()[0] >= 3
+ZMQ3 = int(version.zmq_version().split('.')[0]) >= 3
 
 if not ZMQ3:
     constants.DONTWAIT = constants.NOBLOCK
