@@ -3,13 +3,20 @@ ZeroMQ connection.
 """
 from collections import deque, namedtuple
 
-from zmq.core import constants, error
+from zmq.core import constants, error, version
 from zmq.core.socket import Socket
 
 from zope.interface import implements
 
 from twisted.internet.interfaces import IFileDescriptor, IReadDescriptor
 from twisted.python import log
+
+
+# Patch zmq.core.constants to support both zeromq2 and zeromq3
+ZMQ3 = int(version.zmq_version().split('.')[0]) >= 3
+
+if not ZMQ3:
+    constants.DONTWAIT = constants.NOBLOCK
 
 
 class ZmqEndpointType(object):
@@ -77,10 +84,19 @@ class ZmqConnection(object):
 
         self.fd = self.socket.getsockopt(constants.FD)
         self.socket.setsockopt(constants.LINGER, factory.lingerPeriod)
-        self.socket.setsockopt(
-            constants.MCAST_LOOP, int(self.allowLoopbackMulticast))
+
+        if not ZMQ3:
+            self.socket.setsockopt(
+                constants.MCAST_LOOP, int(self.allowLoopbackMulticast))
+
         self.socket.setsockopt(constants.RATE, self.multicastRate)
-        self.socket.setsockopt(constants.HWM, self.highWaterMark)
+
+        if not ZMQ3:
+            self.socket.setsockopt(constants.HWM, self.highWaterMark)
+        else:
+            self.socket.setsockopt(constants.SNDHWM, self.highWaterMark)
+            self.socket.setsockopt(constants.RCVHWM, self.highWaterMark)
+
         if self.identity is not None:
             self.socket.setsockopt(constants.IDENTITY, self.identity)
 

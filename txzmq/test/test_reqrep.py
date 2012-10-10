@@ -71,36 +71,6 @@ class ZmqREQREPConnectionTestCase(unittest.TestCase):
 
         return _wait(0.01).addCallback(check)
 
-    def test_send_recv_reply(self):
-        d = self.s.sendMsg('aaa')
-
-        def check_response(response):
-            self.assertEqual(response, ['aaa'])
-
-        d.addCallback(check_response)
-        return d
-
-    def test_lot_send_recv_reply(self):
-        deferreds = []
-        for i in range(10):
-            msg_id = "msg_id_%d" % (i,)
-            d = self.s.sendMsg('aaa')
-
-            def check_response(response, msg_id):
-                self.assertEqual(response, ['aaa'])
-
-            d.addCallback(check_response, msg_id)
-            deferreds.append(d)
-        return defer.DeferredList(deferreds, fireOnOneErrback=True)
-
-    def test_cleanup_requests(self):
-        """The request dict is cleanedup properly."""
-        def check(ignore):
-            self.assertEqual(self.s._requests, {})
-            self.failUnlessEqual(self.s.UUID_POOL_GEN_SIZE, len(self.s._uuids))
-
-        return self.s.sendMsg('aaa').addCallback(check)
-
 
 class ZmqReplyConnection(ZmqREPConnection):
     def messageReceived(self, message):
@@ -147,14 +117,3 @@ class ZmqREQREPTwoFactoryConnectionTestCase(unittest.TestCase):
     def tearDown(self):
         self.factory2.shutdown()
         self.factory1.shutdown()
-
-    def test_start(self):
-        for _ in xrange(self.REQUEST_COUNT):
-            reactor.callLater(0, self.c1.send, 'req')
-        reactor.callLater(0, self.c1.send, 'stop')
-
-        def checkResults(_):
-            self.failUnlessEqual(self.c1.message_count, 3 * self.REQUEST_COUNT)
-            self.failUnlessEqual(self.c2.message_count, self.REQUEST_COUNT)
-
-        return self.c1.d.addCallback(checkResults)

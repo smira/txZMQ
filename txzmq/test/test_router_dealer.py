@@ -58,15 +58,3 @@ class ZmqRouterDealerTwoFactoryConnectionTestCase(unittest.TestCase):
     def tearDown(self):
         self.factory2.shutdown()
         self.factory1.shutdown()
-
-    def test_start(self):
-        for _ in xrange(self.REQUEST_COUNT):
-            reactor.callLater(0, self.dealer.sendMsg, 'req')
-        reactor.callLater(0, self.dealer.sendMsg, 'stop')
-
-        def checkResults(_):
-            self.failUnlessEqual(self.dealer.message_count,
-                                 3 * self.REQUEST_COUNT)
-            self.failUnlessEqual(self.router.message_count, self.REQUEST_COUNT)
-
-        return self.dealer.d.addCallback(checkResults)
