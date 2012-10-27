@@ -37,6 +37,15 @@ def _detect_epgm():
 class ZmqConnectionTestCase(unittest.TestCase):
     """
     Test case for L{zmq.twisted.connection.Connection}.
+
+    In ZeroMQ 2.x, subscription is handled on receiving side:
+    incoming messages are simply filtered, that's why connection.subscribe
+    works immediately.
+
+    In ZeroMQ 3.x, subscription is handled on publisher side:
+    subscriber sends message to the publisher and publisher adjusts
+    filtering on its side. So connection.subscribe doesn't start filtering
+    immediately, it takes some time for messages to pass through the channel.
     """
 
     def setUp(self):
@@ -55,9 +64,11 @@ class ZmqConnectionTestCase(unittest.TestCase):
                                       "ipc://test-sock"))
 
         r.subscribe('tag')
-        s.publish('xyz', 'different-tag')
-        s.publish('abcd', 'tag1')
-        s.publish('efgh', 'tag2')
+
+        def publish(ignore):
+            s.publish('xyz', 'different-tag')
+            s.publish('abcd', 'tag1')
+            s.publish('efgh', 'tag2')
 
         def check(ignore):
             result = getattr(r, 'messages', [])
@@ -65,7 +76,8 @@ class ZmqConnectionTestCase(unittest.TestCase):
             self.failUnlessEqual(
                 result, expected, "Message should have been received")
 
-        return _wait(0.01).addCallback(check)
+        return _wait(0.01).addCallback(publish) \
+            .addCallback(lambda _: _wait(0.01)).addCallback(check)
 
     def test_send_recv_pgm(self):
         r = ZmqTestSubConnection(self.factory, ZmqEndpoint(
@@ -75,8 +87,10 @@ class ZmqConnectionTestCase(unittest.TestCase):
             ZmqEndpointType.connect, "epgm://127.0.0.1;239.192.1.1:5556"))
 
         r.subscribe('tag')
-        s.publish('xyz', 'different-tag')
-        s.publish('abcd', 'tag1')
+
+        def publish(ignore):
+            s.publish('xyz', 'different-tag')
+            s.publish('abcd', 'tag1')
 
         def check(ignore):
             result = getattr(r, 'messages', [])
@@ -84,7 +98,8 @@ class ZmqConnectionTestCase(unittest.TestCase):
             self.failUnlessEqual(
                 result, expected, "Message should have been received")
 
-        return _wait(0.2).addCallback(check)
+        return _wait(0.2).addCallback(publish) \
+            .addCallback(lambda _: _wait(0.2)).addCallback(check)
 
     def test_send_recv_multiple_endpoints(self):
         r = ZmqTestSubConnection(
@@ -100,8 +115,10 @@ class ZmqConnectionTestCase(unittest.TestCase):
             ZmqEndpoint(ZmqEndpointType.connect, "inproc://endpoint"))
 
         r.subscribe('')
-        s1.publish('111', 'tag1')
-        s2.publish('222', 'tag2')
+
+        def publish(ignore):
+            s1.publish('111', 'tag1')
+            s2.publish('222', 'tag2')
 
         def check(ignore):
             result = getattr(r, 'messages', [])
@@ -109,7 +126,8 @@ class ZmqConnectionTestCase(unittest.TestCase):
             self.failUnlessEqual(
                 sorted(result), expected, "Message should have been received")
 
-        return _wait(0.2).addCallback(check)
+        return _wait(0.1).addCallback(publish) \
+            .addCallback(lambda _: _wait(0.1)).addCallback(check)
 
     if not _detect_epgm():
         test_send_recv_pgm.skip = "epgm:// not available"
