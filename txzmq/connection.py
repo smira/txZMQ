@@ -182,21 +182,24 @@ class ZmqConnection(object):
 
         Part of L{IReadDescriptor}.
         """
-        events = self.socket.getsockopt(constants.EVENTS)
+        while True:
+            if self.factory is None:  # disconnected
+                return
 
-        if (events & constants.POLLIN) == constants.POLLIN:
-            while True:
-                if self.factory is None:  # disconnected
-                    return
-                try:
-                    message = self._readMultipart()
-                except error.ZMQError as e:
-                    if e.errno == constants.EAGAIN:
-                        break
+            events = self.socket.getsockopt(constants.EVENTS)
 
-                    raise e
+            if (events & constants.POLLIN) != constants.POLLIN:
+                return
 
-                log.callWithLogger(self, self.messageReceived, message)
+            try:
+                message = self._readMultipart()
+            except error.ZMQError as e:
+                if e.errno == constants.EAGAIN:
+                    continue
+
+                raise e
+
+            log.callWithLogger(self, self.messageReceived, message)
 
     def logPrefix(self):
         """
