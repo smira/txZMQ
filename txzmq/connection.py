@@ -13,7 +13,6 @@ from twisted.internet.interfaces import IFileDescriptor, IReadDescriptor
 from twisted.python import log
 
 
-# Patch zmq.core.constants to support both zeromq2 and zeromq3
 ZMQ3 = version.zmq_version_info()[0] >= 3
 
 
