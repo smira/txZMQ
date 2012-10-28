@@ -9,7 +9,7 @@ Introduction
 txZMQ allows to integrate easily `ØMQ <http://zeromq.org>`_ sockets into
 Twisted event loop (reactor).
 
-txZMQ supports both CPython and PyPy.
+txZMQ supports both CPython and PyPy, and ØMQ library version 2.2.x or 3.2.x.
 
 
 Requirements
@@ -17,7 +17,7 @@ Requirements
 
 Non-Python library required:
 
-* ØMQ library >= 2.1 (heavily tested with 2.1.10)
+* ØMQ library 2.2.x or 3.2.x
 
 Python packages required:
 
