@@ -8,6 +8,7 @@ from zmq.core.socket import Socket
 
 from zope.interface import implements
 
+from twisted.internet import reactor
 from twisted.internet.interfaces import IFileDescriptor, IReadDescriptor
 from twisted.python import log
 
@@ -78,6 +79,7 @@ class ZmqConnection(object):
         self.socket = Socket(factory.context, self.socketType)
         self.queue = deque()
         self.recv_parts = []
+        self.read_scheduled = None
 
         self.fd = self.socket.getsockopt(constants.FD)
         self.socket.setsockopt(constants.LINGER, factory.lingerPeriod)
@@ -128,6 +130,10 @@ class ZmqConnection(object):
         self.socket = None
 
         self.factory = None
+
+        if self.read_scheduled is not None:
+            self.read_scheduled.cancel()
+            self.read_scheduled = None
 
     def __repr__(self):
         return "%s(%r, %r)" % (
@@ -182,6 +188,11 @@ class ZmqConnection(object):
 
         Part of L{IReadDescriptor}.
         """
+        if self.read_scheduled is not None:
+            if not self.read_scheduled.called:
+                self.read_scheduled.cancel()
+            self.read_scheduled = None
+
         while True:
             if self.factory is None:  # disconnected
                 return
@@ -222,6 +233,9 @@ class ZmqConnection(object):
             for m in message[:-1]:
                 self.socket.send(m, constants.NOBLOCK | constants.SNDMORE)
             self.socket.send(message[-1], constants.NOBLOCK)
+
+        if self.read_scheduled is None:
+            self.read_scheduled = reactor.callLater(0, self.doRead)
 
     def messageReceived(self, message):
         """
