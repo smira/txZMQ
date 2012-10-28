@@ -224,7 +224,11 @@ class ZmqConnection(object):
         """
         Send message via ZeroMQ.
 
+        Sending is performed directly to ZeroMQ without queueing. If HWM is reached on
+        ZeroMQ side, sending operation is aborted with exception from ZeroMQ (EAGAIN).
+
         @param message: message data
+        @type message: message could be either list of parts or single part (str)
         """
         if not hasattr(message, '__iter__'):
             self.socket.send(message, constants.NOBLOCK)
