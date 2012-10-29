@@ -3,7 +3,7 @@ ZeroMQ connection.
 """
 from collections import deque, namedtuple
 
-from zmq.core import constants, error, version
+from zmq.core import constants, error
 from zmq.core.socket import Socket
 
 from zope.interface import implements
@@ -13,7 +13,12 @@ from twisted.internet.interfaces import IFileDescriptor, IReadDescriptor
 from twisted.python import log
 
 
-ZMQ3 = version.zmq_version_info()[0] >= 3
+try:
+    from zmq.core import version
+
+    ZMQ3 = version.zmq_version_info()[0] >= 3
+except ImportError:
+    ZMQ3 = False
 
 
 class ZmqEndpointType(object):
@@ -224,11 +229,13 @@ class ZmqConnection(object):
         """
         Send message via ZeroMQ.
 
-        Sending is performed directly to ZeroMQ without queueing. If HWM is reached on
-        ZeroMQ side, sending operation is aborted with exception from ZeroMQ (EAGAIN).
+        Sending is performed directly to ZeroMQ without queueing. If HWM is
+        reached on ZeroMQ side, sending operation is aborted with exception
+        from ZeroMQ (EAGAIN).
 
         @param message: message data
-        @type message: message could be either list of parts or single part (str)
+        @type message: message could be either list of parts or single
+            part (str)
         """
         if not hasattr(message, '__iter__'):
             self.socket.send(message, constants.NOBLOCK)
