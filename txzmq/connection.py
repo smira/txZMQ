@@ -63,6 +63,12 @@ class ZmqConnection(object):
     multicastRate = 100
     highWaterMark = 0
 
+    # Only supported by zeromq3 and pyzmq>=2.2.0.1
+    tcpKeepalive = 0
+    tcpKeepaliveCount = 0
+    tcpKeepaliveIdle = 0
+    tcpKeepaliveInterval = 0
+
     def __init__(self, factory, endpoint=None, identity=None):
         """
         Constructor.
@@ -99,6 +105,16 @@ class ZmqConnection(object):
         else:
             self.socket.setsockopt(constants.SNDHWM, self.highWaterMark)
             self.socket.setsockopt(constants.RCVHWM, self.highWaterMark)
+
+        if ZMQ3 and self.tcpKeepalive:
+            self.socket.setsockopt(
+                constants.TCP_KEEPALIVE, self.tcpKeepalive)
+            self.socket.setsockopt(
+                constants.TCP_KEEPALIVE_CNT, self.tcpKeepaliveCount)
+            self.socket.setsockopt(
+                constants.TCP_KEEPALIVE_IDLE, self.tcpKeepaliveIdle)
+            self.socket.setsockopt(
+                constants.TCP_KEEPALIVE_INTVL, self.tcpKeepaliveInterval)
 
         if self.identity is not None:
             self.socket.setsockopt(constants.IDENTITY, self.identity)
