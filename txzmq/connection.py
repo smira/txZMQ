@@ -91,33 +91,33 @@ class ZmqConnection(object):
         self.recv_parts = []
         self.read_scheduled = None
 
-        self.fd = self.socket.getsockopt(constants.FD)
-        self.socket.setsockopt(constants.LINGER, factory.lingerPeriod)
+        self.fd = self.socket.get(constants.FD)
+        self.socket.set(constants.LINGER, factory.lingerPeriod)
 
         if not ZMQ3:
-            self.socket.setsockopt(
+            self.socket.set(
                 constants.MCAST_LOOP, int(self.allowLoopbackMulticast))
 
-        self.socket.setsockopt(constants.RATE, self.multicastRate)
+        self.socket.set(constants.RATE, self.multicastRate)
 
         if not ZMQ3:
-            self.socket.setsockopt(constants.HWM, self.highWaterMark)
+            self.socket.set(constants.HWM, self.highWaterMark)
         else:
-            self.socket.setsockopt(constants.SNDHWM, self.highWaterMark)
-            self.socket.setsockopt(constants.RCVHWM, self.highWaterMark)
+            self.socket.set(constants.SNDHWM, self.highWaterMark)
+            self.socket.set(constants.RCVHWM, self.highWaterMark)
 
         if ZMQ3 and self.tcpKeepalive:
-            self.socket.setsockopt(
+            self.socket.set(
                 constants.TCP_KEEPALIVE, self.tcpKeepalive)
-            self.socket.setsockopt(
+            self.socket.set(
                 constants.TCP_KEEPALIVE_CNT, self.tcpKeepaliveCount)
-            self.socket.setsockopt(
+            self.socket.set(
                 constants.TCP_KEEPALIVE_IDLE, self.tcpKeepaliveIdle)
-            self.socket.setsockopt(
+            self.socket.set(
                 constants.TCP_KEEPALIVE_INTVL, self.tcpKeepaliveInterval)
 
         if self.identity is not None:
-            self.socket.setsockopt(constants.IDENTITY, self.identity)
+            self.socket.set(constants.IDENTITY, self.identity)
 
         if endpoint:
             self.addEndpoints([endpoint])
@@ -194,7 +194,7 @@ class ZmqConnection(object):
         """
         while True:
             self.recv_parts.append(self.socket.recv(constants.NOBLOCK))
-            if not self.socket.getsockopt(constants.RCVMORE):
+            if not self.socket.get(constants.RCVMORE):
                 result, self.recv_parts = self.recv_parts, []
 
                 return result
@@ -217,7 +217,7 @@ class ZmqConnection(object):
             if self.factory is None:  # disconnected
                 return
 
-            events = self.socket.getsockopt(constants.EVENTS)
+            events = self.socket.get(constants.EVENTS)
 
             if (events & constants.POLLIN) != constants.POLLIN:
                 return
