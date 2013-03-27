@@ -18,7 +18,12 @@ try:
 
     ZMQ3 = version.zmq_version_info()[0] >= 3
 except ImportError:
-    ZMQ3 = False
+    try:
+        # In pyzmq-13.0.0, this moved again.
+        from zmq.core import zmq_version_info
+        ZMQ3 = zmq_version_info()[0] >= 3
+    except ImportError:
+        ZMQ3 = False
 
 
 class ZmqEndpointType(object):
