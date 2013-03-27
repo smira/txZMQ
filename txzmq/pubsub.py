@@ -37,7 +37,7 @@ class ZmqSubConnection(ZmqConnection):
         @param tag: message tag
         @type tag: C{str}
         """
-        self.socket.set(constants.SUBSCRIBE, tag)
+        self.socket_set(constants.SUBSCRIBE, tag)
 
     def unsubscribe(self, tag):
         """
@@ -46,7 +46,7 @@ class ZmqSubConnection(ZmqConnection):
         @param tag: message tag
         @type tag: C{str}
         """
-        self.socket.set(constants.UNSUBSCRIBE, tag)
+        self.socket_set(constants.UNSUBSCRIBE, tag)
 
     def messageReceived(self, message):
         """

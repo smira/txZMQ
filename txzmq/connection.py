@@ -13,6 +13,8 @@ from twisted.internet.interfaces import IFileDescriptor, IReadDescriptor
 from twisted.python import log
 
 
+# PYZMQ13 stands for pyzmq-13.0.0
+PYZMQ13 = False
 try:
     from zmq.core import version
 
@@ -22,6 +24,7 @@ except ImportError:
         # In pyzmq-13.0.0, this moved again.
         from zmq.core import zmq_version_info
         ZMQ3 = zmq_version_info()[0] >= 3
+        PYZMQ13 = True
     except ImportError:
         ZMQ3 = False
 
@@ -96,33 +99,33 @@ class ZmqConnection(object):
         self.recv_parts = []
         self.read_scheduled = None
 
-        self.fd = self.socket.get(constants.FD)
-        self.socket.set(constants.LINGER, factory.lingerPeriod)
+        self.fd = self.socket_get(constants.FD)
+        self.socket_set(constants.LINGER, factory.lingerPeriod)
 
         if not ZMQ3:
-            self.socket.set(
+            self.socket_set(
                 constants.MCAST_LOOP, int(self.allowLoopbackMulticast))
 
-        self.socket.set(constants.RATE, self.multicastRate)
+        self.socket_set(constants.RATE, self.multicastRate)
 
         if not ZMQ3:
-            self.socket.set(constants.HWM, self.highWaterMark)
+            self.socket_set(constants.HWM, self.highWaterMark)
         else:
-            self.socket.set(constants.SNDHWM, self.highWaterMark)
-            self.socket.set(constants.RCVHWM, self.highWaterMark)
+            self.socket_set(constants.SNDHWM, self.highWaterMark)
+            self.socket_set(constants.RCVHWM, self.highWaterMark)
 
         if ZMQ3 and self.tcpKeepalive:
-            self.socket.set(
+            self.socket_set(
                 constants.TCP_KEEPALIVE, self.tcpKeepalive)
-            self.socket.set(
+            self.socket_set(
                 constants.TCP_KEEPALIVE_CNT, self.tcpKeepaliveCount)
-            self.socket.set(
+            self.socket_set(
                 constants.TCP_KEEPALIVE_IDLE, self.tcpKeepaliveIdle)
-            self.socket.set(
+            self.socket_set(
                 constants.TCP_KEEPALIVE_INTVL, self.tcpKeepaliveInterval)
 
         if self.identity is not None:
-            self.socket.set(constants.IDENTITY, self.identity)
+            self.socket_set(constants.IDENTITY, self.identity)
 
         if endpoint:
             self.addEndpoints([endpoint])
@@ -199,7 +202,7 @@ class ZmqConnection(object):
         """
         while True:
             self.recv_parts.append(self.socket.recv(constants.NOBLOCK))
-            if not self.socket.get(constants.RCVMORE):
+            if not self.socket_get(constants.RCVMORE):
                 result, self.recv_parts = self.recv_parts, []
 
                 return result
@@ -222,7 +225,7 @@ class ZmqConnection(object):
             if self.factory is None:  # disconnected
                 return
 
-            events = self.socket.get(constants.EVENTS)
+            events = self.socket_get(constants.EVENTS)
 
             if (events & constants.POLLIN) != constants.POLLIN:
                 return
@@ -287,3 +290,23 @@ class ZmqConnection(object):
                 self.socket.bind(endpoint.address)
             else:
                 assert False, "Unknown endpoint type %r" % endpoint
+
+    # Compatibility shims
+    def _socket_get_pyzmq2(self, constant):
+        return self.socket.getsockopt(constant)
+
+    def _socket_get_pyzmq13(self, constant):
+        return self.socket.get(constant)
+
+    def _socket_set_pyzmq2(self, constant, value):
+        return self.socket.setsockopt(constant, value)
+
+    def _socket_set_pyzmq13(self, constant, value):
+        return self.socket.set(constant, value)
+
+    if PYZMQ13:
+        socket_get = _socket_get_pyzmq13
+        socket_set = _socket_set_pyzmq13
+    else:
+        socket_get = _socket_get_pyzmq2
+        socket_set = _socket_set_pyzmq2
