@@ -9,6 +9,12 @@ from txzmq.pubsub import ZmqPubConnection, ZmqSubConnection
 from txzmq.test import _wait
 
 
+try:
+    from zmq.core.error import ZMQError
+except ImportError:
+    from zmq.error import ZMQError
+
+
 class ZmqTestSubConnection(ZmqSubConnection):
     def gotMessage(self, message, tag):
         if not hasattr(self, 'messages'):
@@ -30,7 +36,7 @@ def _detect_epgm():
         socket.bind("epgm://127.0.0.1;239.192.1.1:5557")
 
         return True
-    except zmq.core.error.ZMQError:
+    except ZMQError:
         return False
 
 
