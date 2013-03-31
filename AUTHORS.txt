@@ -5,3 +5,4 @@
 * Jan Dvořák <mordae@anilinux.org>
 * Aleks Clark <aleks.clark@gmail.com>
 * Ralph Bean <rbean@redhat.com>
+* Alexander Else
