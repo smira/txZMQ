@@ -41,3 +41,5 @@ docs/_build
 *~
 *.swp
 _trial_temp/
+
+env/**
