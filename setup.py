@@ -1,10 +1,10 @@
-from distutils.core import setup
+from setuptools import setup, find_packages
 import sys
 
 setup(
         name='txZMQ',
         version='0.6.2',
-        packages=['txzmq', 'txzmq.test'],
+        packages=find_packages(),
         license='GPLv2',
         author='Andrey Smirnov',
         author_email='me@smira.ru',
