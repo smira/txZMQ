@@ -12,4 +12,5 @@ setup(
         description='Twisted bindings for ZeroMQ',
         long_description=open('README.rst').read(),
         install_requires=["Twisted>=10.0", "pyzmq-ctypes>=2.1" if sys.subversion[0] == "PyPy" else "pyzmq>=2.1"],
+        test_suite='txzmq.test',
         )
