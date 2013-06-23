@@ -12,7 +12,7 @@ class ZmqPubConnection(ZmqConnection):
     """
     socketType = constants.PUB
 
-    def publish(self, message, tag=''):
+    def publish(self, tag, message):
         """
         Broadcast L{message} with specified L{tag}.
 
@@ -21,7 +21,17 @@ class ZmqPubConnection(ZmqConnection):
         @param tag: message tag
         @type tag: C{str}
         """
-        self.send(tag + '\0' + message)
+        self.publish_multipart([tag, message])
+
+    def publish_multipart(self, message):
+        """
+        Broadcast L{message} with specified L{tag}
+
+        @param message: message data
+        @type message: C{list}
+        """
+
+        self.send(message)
 
 
 class ZmqSubConnection(ZmqConnection):
@@ -54,14 +64,9 @@ class ZmqSubConnection(ZmqConnection):
 
         @param message: message data
         """
-        if len(message) == 2:
-            # compatibility receiving of tag as first part
-            # of multi-part message
-            self.gotMessage(message[1], message[0])
-        else:
-            self.gotMessage(*reversed(message[0].split('\0', 1)))
+        self.gotMessage(*message)
 
-    def gotMessage(self, message, tag):
+    def gotMessage(self, *args):
         """
         Called on incoming message recevied by subscriber
 
