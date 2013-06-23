@@ -25,9 +25,9 @@ class ZmqREQREPConnectionTestCase(unittest.TestCase):
 
     def setUp(self):
         self.factory = ZmqFactory()
-        b = ZmqEndpoint(ZmqEndpointType.bind, "ipc://#3")
+        b = ZmqEndpoint(ZmqEndpointType.bind, "inproc://#3")
         self.r = ZmqTestREPConnection(self.factory, b)
-        c = ZmqEndpoint(ZmqEndpointType.connect, "ipc://#3")
+        c = ZmqEndpoint(ZmqEndpointType.connect, "inproc://#3")
         self.s = ZmqREQConnection(self.factory, c, identity='client')
 
     def tearDown(self):
