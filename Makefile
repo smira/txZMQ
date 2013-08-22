@@ -26,4 +26,7 @@ test: env
 
 test-clean: clean test
 
-.PHONY: env env-clean check check-clean test test-clean
+docs:
+	. env/bin/activate && (cd docs; make html)
+
+.PHONY: env env-clean check check-clean test test-clean docs

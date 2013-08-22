@@ -1,3 +1,4 @@
 Twisted
 pyflakes
 pep8
+Sphinx

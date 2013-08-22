@@ -6,3 +6,4 @@ _trial_temp/
 *.pyc
 *~
 *.swp
+docs/_build
