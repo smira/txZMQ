@@ -3,8 +3,8 @@ ZeroMQ connection.
 """
 from collections import deque, namedtuple
 
-from zmq.core import constants, error
-from zmq.core.socket import Socket
+from zmq import constants, error
+from zmq import Socket
 
 from zope.interface import implements
 
@@ -12,21 +12,8 @@ from twisted.internet import reactor
 from twisted.internet.interfaces import IFileDescriptor, IReadDescriptor
 from twisted.python import log
 
-
-# PYZMQ13 stands for pyzmq-13.0.0
-PYZMQ13 = False
-try:
-    from zmq.core import version
-
-    ZMQ3 = version.zmq_version_info()[0] >= 3
-except ImportError:
-    try:
-        # In pyzmq-13.0.0, this moved again.
-        from zmq.core import zmq_version_info
-        ZMQ3 = zmq_version_info()[0] >= 3
-        PYZMQ13 = True
-    except ImportError:
-        ZMQ3 = False
+from zmq import zmq_version_info
+ZMQ3 = zmq_version_info()[0] >= 3
 
 
 class ZmqEndpointType(object):
@@ -292,21 +279,8 @@ class ZmqConnection(object):
                 assert False, "Unknown endpoint type %r" % endpoint
 
     # Compatibility shims
-    def _socket_get_pyzmq2(self, constant):
-        return self.socket.getsockopt(constant)
-
-    def _socket_get_pyzmq13(self, constant):
+    def socket_get(self, constant):
         return self.socket.get(constant)
 
-    def _socket_set_pyzmq2(self, constant, value):
-        return self.socket.setsockopt(constant, value)
-
-    def _socket_set_pyzmq13(self, constant, value):
+    def socket_set(self, constant, value):
         return self.socket.set(constant, value)
-
-    if PYZMQ13:
-        socket_get = _socket_get_pyzmq13
-        socket_set = _socket_set_pyzmq13
-    else:
-        socket_get = _socket_get_pyzmq2
-        socket_set = _socket_set_pyzmq2

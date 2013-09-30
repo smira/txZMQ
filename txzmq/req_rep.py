@@ -4,7 +4,7 @@ ZeroMQ REQ-REP wrappers.
 import uuid
 import warnings
 
-from zmq.core import constants
+from zmq import constants
 
 from twisted.internet import defer
 

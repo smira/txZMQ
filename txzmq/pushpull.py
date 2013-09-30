@@ -1,7 +1,7 @@
 """
 ZeroMQ PUSH-PULL wrappers.
 """
-from zmq.core import constants
+from zmq import constants
 
 from txzmq.connection import ZmqConnection
 

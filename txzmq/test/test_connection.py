@@ -1,7 +1,7 @@
 """
 Tests for L{txzmq.connection}.
 """
-from zmq.core import constants
+from zmq import constants
 
 from zope.interface import verify as ziv
 

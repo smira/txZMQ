@@ -1,7 +1,8 @@
 """
 ZeroMQ ROUTER and DEALER connection types.
 """
-from zmq.core import constants
+
+from zmq import constants
 
 from txzmq.connection import ZmqConnection
 

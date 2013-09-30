@@ -8,11 +8,7 @@ from txzmq.factory import ZmqFactory
 from txzmq.pubsub import ZmqPubConnection, ZmqSubConnection
 from txzmq.test import _wait
 
-
-try:
-    from zmq.core.error import ZMQError
-except ImportError:
-    from zmq.error import ZMQError
+from zmq.error import ZMQError
 
 
 class ZmqTestSubConnection(ZmqSubConnection):
@@ -30,7 +26,7 @@ def _detect_epgm():
     import zmq
 
     context = zmq.Context()
-    socket = zmq.Socket(context, zmq.core.constants.PUB)
+    socket = zmq.Socket(context, zmq.constants.PUB)
 
     try:
         socket.bind("epgm://127.0.0.1;239.192.1.1:5557")
