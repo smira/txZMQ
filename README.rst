@@ -21,7 +21,7 @@ Non-Python library required:
 
 Python packages required:
 
-* pyzmq (for CPython & PyPy)
+* pyzmq >= 13 (for CPython & PyPy)
 * Twisted
 
 

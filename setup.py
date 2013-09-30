@@ -1,9 +1,8 @@
 from distutils.core import setup
-import sys
 
 setup(
         name='txZMQ',
-        version='0.6.2',
+        version='0.7.0',
         packages=['txzmq', 'txzmq.test'],
         license='GPLv2',
         author='Andrey Smirnov',
