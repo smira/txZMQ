@@ -2,3 +2,4 @@ Twisted
 pyflakes
 pep8
 Sphinx
+pyzmq>=13
