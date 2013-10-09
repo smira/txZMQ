@@ -2,7 +2,9 @@ language: python
 python:
     - 2.6
     - 2.7
-    - pypy
+    # comment out pypy until travis updates to pypy 2.0/2.1, cffi doesn't work
+    # on PyPy 1.9
+    # - pypy
 env:
     - REACTOR=select
     - REACTOR=epoll
