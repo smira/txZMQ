@@ -10,7 +10,7 @@ install:
     - sudo apt-get install libzmq3-dev
     - pip install -r requirements.txt --use-mirrors
 script:
-    - trial --reactor=$(REACTOR) txzmq
+    - trial --reactor=$REACTOR txzmq
     - pep8 --repeat txzmq
     - pyflakes txzmq
 notifications:
