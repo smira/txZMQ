@@ -1,4 +1,5 @@
 VIRTUALENV?=virtualenv
+REACTOR?=default
 
 all: test check
 
@@ -21,11 +22,11 @@ check: env
 check-clean: clean check
 
 test: env
-	env/bin/trial txzmq
+	env/bin/trial --reactor=$(REACTOR) txzmq
 
 test-clean: clean test
 
 docs:
 	. env/bin/activate && (cd docs; make html)
 
-.PHONY: env env-clean check check-clean test test-clean docs
+.PHONY: env-clean check check-clean test test-clean docs
