@@ -1,0 +1,13 @@
+language: python
+python:
+    - 2.6
+    - 2.7
+install:
+    - sudo apt-get install libzeromq-dev
+    - make env
+script:
+    - make test
+    - make check
+notifications:
+    email:
+        - me@smira.ru

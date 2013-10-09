@@ -9,7 +9,7 @@ clean:
 
 env:
 	$(VIRTUALENV) --no-site-packages env/
-	env/bin/pip install -r requirements.txt
+	env/bin/pip install -r requirements.txt --use-mirrors
 	rm -f .runtime_cfg
 
 env-clean: clean env
