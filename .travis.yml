@@ -8,10 +8,11 @@ env:
     - REACTOR=epoll
 install:
     - sudo apt-get install libzmq3-dev
-    - make env
+    - pip install -r requirements.txt --use-mirrors
 script:
-    - make test
-    - make check
+    - trial --reactor=$(REACTOR) txzmq
+    - pep8 --repeat txzmq
+    - pyflakes txzmq
 notifications:
     email:
         - me@smira.ru
