@@ -12,17 +12,16 @@ class ZmqFactory(object):
 
     Factory creates and destroys ZeroMQ context.
 
-    @cvar reactor: reference to Twisted reactor used by all the connections
-    @cvar ioThreads: number of IO threads ZeroMQ will be using for this context
-    @type ioThreads: C{int}
-    @cvar: lingerPeriod: number of milliseconds to block when closing socket
+    :var reactor: reference to Twisted reactor used by all the connections
+    :var ioThreads: number of IO threads ZeroMQ will be using for this context
+    :vartype ioThreads: int
+    :var lingerPeriod: number of milliseconds to block when closing socket
         (terminating context), when there are some messages pending to be sent
-    @type lingerPeriod: C{int}
+    :vartype lingerPeriod: int
 
-    @ivar connections: set of instanciated L{ZmqConnection}s
-    @type connections: C{set}
-    @ivar context: ZeroMQ context
-    @type context: L{Context}
+    :var connections: set of instanciated :class:`ZmqConnection`
+    :vartype connections: set
+    :var context: ZeroMQ context
     """
 
     reactor = reactor
@@ -46,7 +45,8 @@ class ZmqFactory(object):
         Shutdown factory.
 
         This is shutting down all created connections
-        and terminating ZeroMQ context.
+        and terminating ZeroMQ context. Also cleans up
+        Twisted reactor.
         """
         for connection in self.connections.copy():
             connection.shutdown()
@@ -60,5 +60,8 @@ class ZmqFactory(object):
         """
         Register factory to be automatically shut down
         on reactor shutdown.
+
+        It is recommended that this method is called on any
+        created factory.
         """
         reactor.addSystemEventTrigger('during', 'shutdown', self.shutdown)

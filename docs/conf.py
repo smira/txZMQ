@@ -28,7 +28,6 @@ sys.path.insert(0, os.path.abspath('..'))
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.extlinks',
               'sphinx.ext.viewcode']
 
-autodoc_default_flags = ['show-inheritance']
 autodoc_member_order = 'bysource'
 
 _tm_base = 'http://twistedmatrix.com/documents/current/api/'
