@@ -21,35 +21,58 @@ class ZmqEndpointType(object):
     Endpoint could be "bound" or "connected".
     """
     bind = "bind"
+    """
+    Bind, listen for connection.
+    """
     connect = "connect"
+    """
+    Connect to another endpoint.
+    """
 
 
-ZmqEndpoint = namedtuple('ZmqEndpoint', ['type', 'address'])
+class ZmqEndpoint(namedtuple('ZmqEndpoint', ['type', 'address'])):
+    """
+    ZeroMQ endpoint used when connecting or listening for connections.
+
+    Consists of two members: `type` and `address`.
+
+    :var type: Could be either :attr:`ZmqEndpointType.bind` or
+        :attr:`ZmqEndpointType.connect`.
+    :var address: ZeroMQ address of endpoint, could be IP address,
+        filename, see ZeroMQ docs for more details.
+    :vartype address: str
+    """
 
 
 class ZmqConnection(object):
     """
     Connection through ZeroMQ, wraps up ZeroMQ socket.
 
-    @cvar socketType: socket type, from ZeroMQ
-    @cvar allowLoopbackMulticast: is loopback multicast allowed?
-    @type allowLoopbackMulticast: C{boolean}
-    @cvar multicastRate: maximum allowed multicast rate, kbps
-    @type multicastRate: C{int}
-    @cvar highWaterMark: hard limit on the maximum number of outstanding
-        messages 0MQ shall queue in memory for any single peer
-    @type highWaterMark: C{int}
+    This class isn't supposed to be used directly, instead use one of the
+    descendants like :class:`ZmqPushConnection`.
 
-    @ivar factory: ZeroMQ Twisted factory reference
-    @type factory: L{ZmqFactory}
-    @ivar socket: ZeroMQ Socket
-    @type socket: L{Socket}
-    @ivar endpoints: ZeroMQ addresses for connect/bind
-    @type endpoints: C{list} of L{ZmqEndpoint}
-    @ivar fd: file descriptor of zmq mailbox
-    @type fd: C{int}
-    @ivar queue: output message queue
-    @type queue: C{deque}
+    :class:`ZmqConnection` implements glue between ZeroMQ and Twisted
+    reactor: putting polling ZeroMQ file descriptor into reactor,
+    processing events, reading data from socket.
+
+    :var socketType: socket type, from ZeroMQ
+    :var allowLoopbackMulticast: is loopback multicast allowed?
+    :vartype allowLoopbackMulticast: bool
+    :var multicastRate: maximum allowed multicast rate, kbps
+    :vartype multicastRate: int
+    :var highWaterMark: hard limit on the maximum number of outstanding
+        messages 0MQ shall queue in memory for any single peer
+    :vartype highWaterMark: int
+    :var factory: ZeroMQ Twisted factory reference
+    :vartype factory: :class:`ZmqFactory`
+    :var socket: ZeroMQ Socket
+    :vartype socket: zmq.Socket
+    :var endpoints: ZeroMQ addresses for connect/bind
+    :vartype endpoints: list of :class:`ZmqEndpoint`
+    :var fd: file descriptor of zmq mailbox
+    :vartype fd: int
+    :var queue: output message queue
+    :vartype queue: deque
     """
     implements(IReadDescriptor, IFileDescriptor)
 
@@ -69,14 +92,15 @@ class ZmqConnection(object):
         Constructor.
 
         One endpoint is passed to the constructor, more could be added
-        via call to C{addEndpoints}.
+        via call to :meth:`addEndpoints`.
 
-        @param factory: ZeroMQ Twisted factory
-        @type factory: L{ZmqFactory}
-        @param endpoint: ZeroMQ address for connect/bind
-        @type endpoint: C{list} of L{ZmqEndpoint}
-        @param identity: socket identity (ZeroMQ)
-        @type identity: C{str}
+        :param factory: ZeroMQ Twisted factory
+        :type factory: :class:`ZmqFactory`
+        :param endpoint: ZeroMQ address for connect/bind
+        :type endpoint:  :class:`ZmqEndpoint`
+        :param identity: socket identity (ZeroMQ), don't set unless you know
+            how it works
+        :type identity: str
         """
         self.factory = factory
         self.endpoints = []
@@ -86,33 +110,33 @@ class ZmqConnection(object):
         self.recv_parts = []
         self.read_scheduled = None
 
-        self.fd = self.socket_get(constants.FD)
-        self.socket_set(constants.LINGER, factory.lingerPeriod)
+        self.fd = self.socket.get(constants.FD)
+        self.socket.set(constants.LINGER, factory.lingerPeriod)
 
         if not ZMQ3:
-            self.socket_set(
+            self.socket.set(
                 constants.MCAST_LOOP, int(self.allowLoopbackMulticast))
 
-        self.socket_set(constants.RATE, self.multicastRate)
+        self.socket.set(constants.RATE, self.multicastRate)
 
         if not ZMQ3:
-            self.socket_set(constants.HWM, self.highWaterMark)
+            self.socket.set(constants.HWM, self.highWaterMark)
         else:
-            self.socket_set(constants.SNDHWM, self.highWaterMark)
-            self.socket_set(constants.RCVHWM, self.highWaterMark)
+            self.socket.set(constants.SNDHWM, self.highWaterMark)
+            self.socket.set(constants.RCVHWM, self.highWaterMark)
 
         if ZMQ3 and self.tcpKeepalive:
-            self.socket_set(
+            self.socket.set(
                 constants.TCP_KEEPALIVE, self.tcpKeepalive)
-            self.socket_set(
+            self.socket.set(
                 constants.TCP_KEEPALIVE_CNT, self.tcpKeepaliveCount)
-            self.socket_set(
+            self.socket.set(
                 constants.TCP_KEEPALIVE_IDLE, self.tcpKeepaliveIdle)
-            self.socket_set(
+            self.socket.set(
                 constants.TCP_KEEPALIVE_INTVL, self.tcpKeepaliveInterval)
 
         if self.identity is not None:
-            self.socket_set(constants.IDENTITY, self.identity)
+            self.socket.set(constants.IDENTITY, self.identity)
 
         if endpoint:
             self.addEndpoints([endpoint])
@@ -124,18 +148,20 @@ class ZmqConnection(object):
 
     def addEndpoints(self, endpoints):
         """
-        Add more connection endpoints. Connection may have
-        many endpoints, mixing protocols and types.
+        Add more connection endpoints.
 
-        @param endpoints: list of endpoints to add
-        @type endpoints: C{list}
+        Connection may have many endpoints, mixing ZeroMQ protocols
+        (TCP, IPC, ...) and types (connect or bind).
+
+        :param endpoints: list of endpoints to add
+        :type endpoints: list of :class:`ZmqEndpoint`
         """
         self.endpoints.extend(endpoints)
         self._connectOrBind(endpoints)
 
     def shutdown(self):
         """
-        Shutdown connection and socket.
+        Shutdown (close) connection and ZeroMQ socket.
         """
         self.factory.reactor.removeReader(self)
 
@@ -156,10 +182,13 @@ class ZmqConnection(object):
 
     def fileno(self):
         """
-        Part of L{IFileDescriptor}.
+        Implementation of :tm:`IFileDescriptor
+        <internet.interfaces.IFileDescriptor>`.
 
-        @return: The platform-specified representation of a file descriptor
-                 number.
+        Returns ZeroMQ polling file descriptor.
+
+        :return: The platform-specified representation of a file descriptor
+            number.
         """
         return self.fd
 
@@ -167,17 +196,13 @@ class ZmqConnection(object):
         """
         Called when the connection was lost.
 
-        Part of L{IFileDescriptor}.
+        Implementation of :tm:`IFileDescriptor
+        <internet.interfaces.IFileDescriptor>`.
 
         This is called when the connection on a selectable object has been
         lost.  It will be called whether the connection was closed explicitly,
         an exception occurred in an event handler, or the other end of the
         connection closed it first.
-
-        @param reason: A failure instance indicating the reason why the
-                       connection was lost.  L{error.ConnectionLost} and
-                       L{error.ConnectionDone} are of special note, but the
-                       failure may be of other classes as well.
         """
         if self.factory:
             self.factory.reactor.removeReader(self)
@@ -189,19 +214,20 @@ class ZmqConnection(object):
         """
         while True:
             self.recv_parts.append(self.socket.recv(constants.NOBLOCK))
-            if not self.socket_get(constants.RCVMORE):
+            if not self.socket.get(constants.RCVMORE):
                 result, self.recv_parts = self.recv_parts, []
 
                 return result
 
     def doRead(self):
         """
-        Some data is available for reading on your descriptor.
+        Some data is available for reading on ZeroMQ descriptor.
 
         ZeroMQ is signalling that we should process some events,
-        we're starting to to receive incoming messages.
+        we're starting to receive incoming messages.
 
-        Part of L{IReadDescriptor}.
+        Implementation of :tm:`IReadDescriptor
+        <internet.interfaces.IReadDescriptor>`.
         """
         if self.read_scheduled is not None:
             if not self.read_scheduled.called:
@@ -212,7 +238,7 @@ class ZmqConnection(object):
             if self.factory is None:  # disconnected
                 return
 
-            events = self.socket_get(constants.EVENTS)
+            events = self.socket.get(constants.EVENTS)
 
             if (events & constants.POLLIN) != constants.POLLIN:
                 return
@@ -229,24 +255,28 @@ class ZmqConnection(object):
 
     def logPrefix(self):
         """
-        Part of L{ILoggingContext}.
+        Implementation of :tm:`ILoggingContext
+        <internet.interfaces.ILoggingContext>`.
 
-        @return: Prefix used during log formatting to indicate context.
-        @rtype: C{str}
+        :return: Prefix used during log formatting to indicate context.
+        :rtype: str
         """
         return 'ZMQ'
 
     def send(self, message):
         """
-        Send message via ZeroMQ.
+        Send message via ZeroMQ socket.
 
         Sending is performed directly to ZeroMQ without queueing. If HWM is
         reached on ZeroMQ side, sending operation is aborted with exception
         from ZeroMQ (EAGAIN).
 
-        @param message: message data
-        @type message: message could be either list of parts or single
-            part (str)
+        After writing read is scheduled as ZeroMQ may not signal incoming
+        messages after we touched socket with write request.
+
+        :param message: message data, could be either list of str (multipart
+            message) or just str
+        :type message: str or list of str
         """
         if not hasattr(message, '__iter__'):
             self.socket.send(message, constants.NOBLOCK)
@@ -260,9 +290,12 @@ class ZmqConnection(object):
 
     def messageReceived(self, message):
         """
-        Called on incoming message from ZeroMQ.
+        Called when complete message is received.
 
-        @param message: message data
+        Not implemented in :class:`ZmqConnection`, should be overridden to
+        handle incoming messages.
+
+        :param message: message data
         """
         raise NotImplementedError(self)
 
@@ -277,10 +310,3 @@ class ZmqConnection(object):
                 self.socket.bind(endpoint.address)
             else:
                 assert False, "Unknown endpoint type %r" % endpoint
-
-    # Compatibility shims
-    def socket_get(self, constant):
-        return self.socket.get(constant)
-
-    def socket_set(self, constant, value):
-        return self.socket.set(constant, value)
