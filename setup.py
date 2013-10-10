@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
         name='txZMQ',
-        version='0.7.0',
+        version=open('VERSION').read().strip(),
         packages=['txzmq', 'txzmq.test'],
         license='GPLv2',
         author='Andrey Smirnov',
