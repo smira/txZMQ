@@ -6,13 +6,10 @@ python:
     # on PyPy 1.9
     # - pypy
 env:
-    - REACTOR=select ZMQ_VERSION=2
-    - REACTOR=epoll ZMQ_VERSION=2
-    - REACTOR=epoll ZMQ_VERSION=3
-    - REACTOR=epoll ZMQ_VERSION=3
+    - REACTOR=select
+    - REACTOR=epoll
 install:
-    - test "$ZMQ_VERSION" == "3" && sudo apt-get install libzmq3-dev || true
-    - test "$ZMQ_VERSION" == "2" && sudo apt-get remove libzmq3 && sudo apt-get install libzmq-dev || true
+    - sudo apt-get install libzmq3-dev
     - pip install -r requirements.txt --use-mirrors
 script:
     - trial --reactor=$REACTOR txzmq
