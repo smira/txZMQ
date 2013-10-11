@@ -14,19 +14,22 @@ class ZmqPubConnection(ZmqConnection):
 
     def publish(self, message, tag=''):
         """
-        Broadcast L{message} with specified L{tag}.
+        Publish `message` with specified `tag`.
 
-        @param message: message data
-        @type message: C{str}
-        @param tag: message tag
-        @type tag: C{str}
+        :param message: message data
+        :type message: str
+        :param tag: message tag
+        :type tag: str
         """
         self.send(tag + '\0' + message)
 
 
 class ZmqSubConnection(ZmqConnection):
     """
-    Subscribing to messages.
+    Subscribing to messages published by publishers.
+
+    Subclass this class and implement :meth:`gotMessage` to handle incoming
+    messages.
     """
     socketType = constants.SUB
 
@@ -34,8 +37,10 @@ class ZmqSubConnection(ZmqConnection):
         """
         Subscribe to messages with specified tag (prefix).
 
-        @param tag: message tag
-        @type tag: C{str}
+        Function may be called several times.
+
+        :param tag: message tag
+        :type tag: str
         """
         self.socket.set(constants.SUBSCRIBE, tag)
 
@@ -43,16 +48,21 @@ class ZmqSubConnection(ZmqConnection):
         """
         Unsubscribe from messages with specified tag (prefix).
 
-        @param tag: message tag
-        @type tag: C{str}
+        Function may be called several times.
+
+        :param tag: message tag
+        :type tag: str
         """
         self.socket.set(constants.UNSUBSCRIBE, tag)
 
     def messageReceived(self, message):
         """
-        Called on incoming message from ZeroMQ.
+        Overridden from :class:`ZmqConnection` to process
+        and unframe incoming messages.
 
-        @param message: message data
+        All parsed messages are passed to :meth:`gotMessage`.
+
+        :param message: message data
         """
         if len(message) == 2:
             # compatibility receiving of tag as first part
@@ -63,9 +73,11 @@ class ZmqSubConnection(ZmqConnection):
 
     def gotMessage(self, message, tag):
         """
-        Called on incoming message recevied by subscriber
+        Called on incoming message recevied by subscriber.
 
-        @param message: message data
-        @param tag: message tag
+        Should be overridden to handle incoming messages.
+
+        :param message: message data
+        :param tag: message tag
         """
         raise NotImplementedError(self)

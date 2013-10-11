@@ -6,7 +6,7 @@ API Documentation
 Factory
 ^^^^^^^
 
-All ZeroMQ connections should belong to some context, txZMQ wraps that into
+All ØMQ connections should belong to some context, txZMQ wraps that into
 concept of factory that tracks all connections created and wraps context.
 
 Factory could be used as an easy way to close all connections and clean
@@ -33,3 +33,27 @@ for different socket types.
 
     .. automethod:: __init__(self, factory, endpoint=None, identity=None)
 
+Publish-Subscribe
+^^^^^^^^^^^^^^^^^
+
+For information on publish-subscribe in ØMQ, please see either 
+`reference <http://api.zeromq.org/3-2:zmq-socket>`_
+or `guide <http://zguide.zeromq.org/page:all>`_ (look for publish-subscribe).
+
+
+.. note::
+
+    These classes use PUB and SUB sockets from ØMQ. Special framing is implemented 
+    to support sending tag: tag and message are separated by zero byte and sent over
+    as single message. This is related to the way PUB-SUB works with PGM (UDP multicast):
+    multipart messages are sent as multiple datagrams and they get mixed together if
+    several publishers exist in the same broadcast domain.
+
+.. autoclass:: txzmq.ZmqPubConnection
+    :show-inheritance:
+    :members:
+
+.. autoclass:: txzmq.ZmqSubConnection
+    :show-inheritance:
+    :members:
+    
