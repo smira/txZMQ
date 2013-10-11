@@ -8,7 +8,9 @@ from txzmq.connection import ZmqConnection
 
 class ZmqPushConnection(ZmqConnection):
     """
-    Publishing in broadcast manner.
+    Pushing messages to the socket.
+
+    Wrapper around ZeroMQ PUSH socket.
     """
     socketType = constants.PUSH
 
@@ -16,15 +18,19 @@ class ZmqPushConnection(ZmqConnection):
         """
         Push a message L{message}.
 
-        @param message: message data
-        @type message: C{str}
+        :param message: message data
+        :type message: str
         """
         self.send(message)
 
 
 class ZmqPullConnection(ZmqConnection):
     """
-    Pull messages from a socket
+    Pull messages from a socket.
+
+    Wrapper around ZeroMQ PULL socket.
+
+    Subclass and override :meth:`onPull`.
     """
     socketType = constants.PULL
 
@@ -32,7 +38,7 @@ class ZmqPullConnection(ZmqConnection):
         """
         Called on incoming message from ZeroMQ.
 
-        @param message: message data
+        :param message: message data
         """
         self.onPull(message)
 
@@ -40,6 +46,6 @@ class ZmqPullConnection(ZmqConnection):
         """
         Called on incoming message received by puller.
 
-        @param message: message data
+        :param message: message data
         """
         raise NotImplementedError(self)
