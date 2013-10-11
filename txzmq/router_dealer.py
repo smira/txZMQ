@@ -62,14 +62,14 @@ class ZmqBase(ZmqConnection):
 
 class ZmqDealerConnection(ZmqBase):
     """
-    A DEALER connection.
+    Raw ZeroMQ DEALER connection.
     """
     socketType = constants.DEALER
 
 
 class ZmqRouterConnection(ZmqBase):
     """
-    A ROUTER connection.
+    Raw ZeroMQ ROUTER connection.
     """
     socketType = constants.ROUTER
 

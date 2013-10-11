@@ -13,11 +13,14 @@ from txzmq.connection import ZmqConnection
 
 class ZmqREQConnection(ZmqConnection):
     """
-    A REQ connection.
+    A Request ZeroMQ connection.
 
     This is implemented with an underlying DEALER socket, even though
     semantics are closer to REQ socket.
 
+    Socket mimics request-reply behavior by sending each message with unique
+    uuid and recording Deferred associated with the message. When reply comes,
+    it uses that Deferred to pass response back to the caller.
     """
     socketType = constants.DEALER
 
@@ -34,11 +37,11 @@ class ZmqREQConnection(ZmqConnection):
         Returns an unique id.
 
         By default, generates pool of UUID in increments
-        of C{UUID_POOL_GEN_SIZE}. Could be overridden to
+        of ``UUID_POOL_GEN_SIZE``. Could be overridden to
         provide custom ID generation.
 
-        @return: generated unique "on the wire" message ID
-        @rtype: C{str}
+        :return: generated unique "on the wire" message ID
+        :rtype: str
         """
         if not self._uuids:
             for _ in xrange(self.UUID_POOL_GEN_SIZE):
@@ -58,10 +61,11 @@ class ZmqREQConnection(ZmqConnection):
 
     def sendMsg(self, *messageParts):
         """
-        Send L{message} with specified L{tag}.
+        Send request and deliver response back when available.
 
-        @param messageParts: message data
-        @type messageParts: C{tuple}
+        :param messageParts: message data
+        :type messageParts: tuple
+        :return: Deferred that will fire when response comes back
         """
         d = defer.Deferred()
         messageId = self._getNextId()
@@ -73,7 +77,9 @@ class ZmqREQConnection(ZmqConnection):
         """
         Called on incoming message from ZeroMQ.
 
-        @param message: message data
+        Dispatches message to back to the requestor.
+
+        :param message: message data
         """
         msgId, _, msg = message[0], message[1], message[2:]
         d = self._requests.pop(msgId)
@@ -83,7 +89,7 @@ class ZmqREQConnection(ZmqConnection):
 
 class ZmqREPConnection(ZmqConnection):
     """
-    A REP connection.
+    A Reply ZeroMQ connection.
 
     This is implemented with an underlying ROUTER socket, but the semantics
     are close to REP socket.
@@ -96,12 +102,12 @@ class ZmqREPConnection(ZmqConnection):
 
     def reply(self, messageId, *messageParts):
         """
-        Send L{message} with specified L{tag}.
+        Send reply to request with specified ``messageId``.
 
-        @param messageId: message uuid
-        @type messageId: C{str}
-        @param message: message data
-        @type message: C{str}
+        :param messageId: message uuid
+        :type messageId: str
+        :param message: message data
+        :type message: str
         """
         routingInfo = self._routingInfo.pop(messageId)
         self.send(routingInfo + [messageId, ''] + list(messageParts))
@@ -110,7 +116,7 @@ class ZmqREPConnection(ZmqConnection):
         """
         Called on incoming message from ZeroMQ.
 
-        @param message: message data
+        :param message: message data
         """
         i = message.index('')
         assert i > 0
@@ -122,12 +128,14 @@ class ZmqREPConnection(ZmqConnection):
 
     def gotMessage(self, messageId, *messageParts):
         """
-        Called on incoming message.
+        Called on incoming request.
 
-        @param messageId: message uuid
-        @type messageId: C{str}
-        @param messageParts: message data
-        @param tag: message tag
+        Override this method in subclass and reply using
+        :meth:`reply` using the same ``messageId``.
+
+        :param messageId: message uuid
+        :type messageId: str
+        :param messageParts: message data
         """
         raise NotImplementedError(self)
 
