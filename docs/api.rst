@@ -36,7 +36,7 @@ for different socket types.
 Publish-Subscribe
 ^^^^^^^^^^^^^^^^^
 
-For information on publish-subscribe in ØMQ, please see either 
+For information on publish-subscribe in ØMQ, please read either 
 `reference <http://api.zeromq.org/3-2:zmq-socket>`_
 or `guide <http://zguide.zeromq.org/page:all>`_ (look for publish-subscribe).
 
@@ -57,3 +57,48 @@ or `guide <http://zguide.zeromq.org/page:all>`_ (look for publish-subscribe).
     :show-inheritance:
     :members:
     
+Push-Pull
+^^^^^^^^^
+
+For information on push and pull sockets in ØMQ, please read either 
+`reference <http://api.zeromq.org/3-2:zmq-socket>`_
+or `guide <http://zguide.zeromq.org/page:all>`_ (look for pull or push).
+
+
+.. autoclass:: txzmq.ZmqPushConnection
+    :show-inheritance:
+    :members:
+
+.. autoclass:: txzmq.ZmqPullConnection
+    :show-inheritance:
+    :members:
+
+
+Request-Reply and Router-Dealer
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For information on these socket types in ØMQ, please read either 
+`reference <http://api.zeromq.org/3-2:zmq-socket>`_
+or `guide <http://zguide.zeromq.org/page:all>`_ (look for router/dealer and request/reply).
+
+
+.. autoclass:: txzmq.ZmqREQConnection
+    :show-inheritance:
+    :members:
+
+.. autoclass:: txzmq.ZmqREPConnection
+    :show-inheritance:
+    :members:
+
+.. autoclass:: txzmq.ZmqRouterConnection
+    :show-inheritance:
+    :members:
+
+.. autoclass:: txzmq.ZmqDealerConnection
+    :show-inheritance:
+    :members:
+
+
+    
+
+

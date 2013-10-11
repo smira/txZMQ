@@ -15,8 +15,7 @@ C libraries required:
 
 Python packages required:
 
-* pyzmq (for CPython)
-* pyzmq-ctypes (for PyPy)
+* pyzmq >= 13
 * Twisted
 
 MacOS X
@@ -30,4 +29,11 @@ This would install ØMQ 2.2.0, for 3.2.x please run::
 
     brew install --with-pgm --devel zeromq
 
-    
+Ubuntu/Debian
+-------------
+
+Install ØMQ library with headers::
+
+    apt-get install libzmq-dev
+
+Package name could aslo be ``libzmq3-dev`` for version 3.x.

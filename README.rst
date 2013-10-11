@@ -11,11 +11,14 @@ Twisted event loop (reactor).
 
 txZMQ supports both CPython and PyPy, and ØMQ library version 2.2.x or 3.2.x.
 
+Documentation is available at `ReadTheDocs <http://txzmq.readthedocs.org>`_ and
+CI is done by `Travis CI <https://travis-ci.org/smira/txZMQ>`_.
+
 
 Requirements
 ------------
 
-Non-Python library required:
+C library required:
 
 * ØMQ library 2.2.x or 3.2.x
 
@@ -36,15 +39,6 @@ txZMQ uses ØMQ APIs to get file descriptor that is used to signal pending
 actions from ØMQ library IO thread running in separate thread. This is used in
 a custom file descriptor reader, which is then added to the Twisted reactor.
 
-From this class, one may implement the various patterns defined by 0MQ. For
-example, special descendants of the ``ZmqConnection`` class,
-``ZmqPubConnection`` and ``ZmqSubConnection``, add special nice features for
-PUB/SUB sockets.
-
-Request/reply pattern is achieved via DEALER/ROUTER sockets and classes ``ZmqREQConnection``,
-``ZmqREPConection``, which provide REQ-REP like semantics in asynchronous case.
-
-Other socket types could be easily derived from ``ZmqConnection``.
 
 Upgrading from 0.3.x
 --------------------
@@ -60,62 +54,6 @@ changes to your code:
   instead of list of endpoints; if you were using one endpoint, no changes
   are required; if using multiple endpoints, please look for ``add_endpoints``
   method.
-
-
-Example
--------
-
-Here is an example of using txZMQ::
-
-    import sys
-
-    from optparse import OptionParser
-
-    from twisted.internet import reactor, defer
-
-    parser = OptionParser("")
-    parser.add_option("-m", "--method", dest="method", help="0MQ socket connection: bind|connect")
-    parser.add_option("-e", "--endpoint", dest="endpoint", help="0MQ Endpoint")
-    parser.add_option("-M", "--mode", dest="mode", help="Mode: publisher|subscriber")
-
-    parser.set_defaults(method="connect", endpoint="epgm://eth1;239.0.5.3:10011")
-
-    (options, args) = parser.parse_args()
-
-    from txzmq import ZmqFactory, ZmqEndpoint, ZmqPubConnection, ZmqSubConnection
-    import time
-
-    zf = ZmqFactory()
-    e = ZmqEndpoint(options.method, options.endpoint)
-
-    if options.mode == "publisher":
-        s = ZmqPubConnection(zf, e)
-
-        def publish():
-            data = str(time.time())
-            print "publishing %r" % data
-            s.publish(data)
-
-            reactor.callLater(1, publish)
-
-        publish()
-    else:
-        s = ZmqSubConnection(zf, e)
-        s.subscribe("")
-
-        def doPrint(*args):
-            print "message received: %r" % (args, )
-
-        s.gotMessage = doPrint
-
-    reactor.run()
-
-The same example is available in the source code. You can run it from the
-checkout directory with the following commands (in two different terminals)::
-
-    examples/pub_sub.py --method=bind --endpoint=ipc:///tmp/sock --mode=publisher
-
-    examples/pub_sub.py --method=connect --endpoint=ipc:///tmp/sock --mode=subscriber
 
 Hacking
 -------

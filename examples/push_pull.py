@@ -15,10 +15,10 @@ import sys
 import time
 from optparse import OptionParser
 
-from twisted.internet import reactor, defer
+from twisted.internet import reactor
 
 rootdir = os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), '..'))
-sys.path.insert(0,rootdir)
+sys.path.insert(0, rootdir)
 os.chdir(rootdir)
 
 from txzmq import ZmqEndpoint, ZmqFactory, ZmqPushConnection, ZmqPullConnection
