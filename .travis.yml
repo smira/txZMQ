@@ -12,9 +12,11 @@ install:
     - sudo apt-get install libzmq3-dev
     - pip install -r requirements.txt --use-mirrors
 script:
-    - trial --reactor=$REACTOR txzmq
+    - coverage run trial --reactor=$REACTOR txzmq
     - pep8 --repeat txzmq
     - pyflakes txzmq
+after_success:
+    - coveralls
 notifications:
     email:
         - me@smira.ru

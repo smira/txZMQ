@@ -7,3 +7,4 @@ _trial_temp/
 *~
 *.swp
 docs/_build
+.coverage

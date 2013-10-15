@@ -1,5 +1,7 @@
 Twisted
+pyzmq>=13
 pyflakes
 pep8
 Sphinx
-pyzmq>=13
+coverage
+coveralls

@@ -1,0 +1,6 @@
+[run]
+source = txzmq
+
+[report]
+omit =
+    */test/*
