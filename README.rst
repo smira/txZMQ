@@ -7,6 +7,12 @@ Twisted bindings for 0MQ
 .. image:: https://coveralls.io/repos/smira/txZMQ/badge.png
     :target: https://coveralls.io/r/smira/txZMQ
 
+.. image:: https://pypip.in/v/txZMQ/badge.png
+        :target: https://crate.io/packages/txZMQ
+
+.. image:: https://pypip.in/d/txZMQ/badge.png
+        :target: https://crate.io/packages/txZMQ
+
 Introduction
 ------------
 
