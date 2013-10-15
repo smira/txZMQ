@@ -1,7 +1,9 @@
 Twisted bindings for 0MQ
 ========================
 
-.. contents::
+.. image:: https://travis-ci.org/smira/txZMQ.png?branch=master   :target: https://travis-ci.org/smira/txZMQ
+
+.. image:: https://coveralls.io/repos/smira/txZMQ/badge.png :target: https://coveralls.io/r/smira/txZMQ
 
 Introduction
 ------------
