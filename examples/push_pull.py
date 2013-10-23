@@ -13,6 +13,7 @@ import os
 import socket
 import sys
 import time
+import zmq
 from optparse import OptionParser
 
 from twisted.internet import reactor
@@ -41,7 +42,10 @@ if options.mode == "push":
     def produce():
         data = [str(time.time()), socket.gethostname()]
         print "producing %r" % data
-        s.push(data)
+        try:
+            s.push(data)
+        except zmq.error.Again:
+            print "Skipping, no pull consumers..."
 
         reactor.callLater(1, produce)
 
