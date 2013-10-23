@@ -49,7 +49,7 @@ if options.mode == "push":
 
         reactor.callLater(1, produce)
 
-    reactor.callWhenRunning(produce)
+    reactor.callWhenRunning(reactor.callLater, 1, produce)
 else:
     s = ZmqPullConnection(zf, e)
 
