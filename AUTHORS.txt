@@ -6,3 +6,4 @@
 * Aleks Clark <aleks.clark@gmail.com>
 * Ralph Bean <rbean@redhat.com>
 * Alexander Else
+* David J. Felix
