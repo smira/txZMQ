@@ -12,7 +12,7 @@ from zmq.error import ZMQError
 
 
 class ZmqTestSubConnection(ZmqSubConnection):
-    def gotMessage(self, message, tag):
+    def gotMessage(self, tag, message):
         if not hasattr(self, 'messages'):
             self.messages = []
 
@@ -60,10 +60,10 @@ class ZmqConnectionTestCase(unittest.TestCase):
 
     def test_send_recv(self):
         r = ZmqTestSubConnection(
-            self.factory, ZmqEndpoint(ZmqEndpointType.bind, "ipc://test-sock"))
+            self.factory, ZmqEndpoint(ZmqEndpointType.bind, "inproc://test-sock"))
         s = ZmqPubConnection(
             self.factory, ZmqEndpoint(ZmqEndpointType.connect,
-                                      "ipc://test-sock"))
+                                      "inproc://test-sock"))
 
         r.subscribe('tag')
 
