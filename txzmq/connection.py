@@ -6,7 +6,7 @@ from collections import deque, namedtuple
 from zmq import constants, error
 from zmq import Socket
 
-from zope.interface import implements
+from zope.interface import implementer
 
 from twisted.internet import reactor
 from twisted.internet.interfaces import IFileDescriptor, IReadDescriptor
@@ -44,6 +44,7 @@ class ZmqEndpoint(namedtuple('ZmqEndpoint', ['type', 'address'])):
     """
 
 
+@implementer(IReadDescriptor, IFileDescriptor)
 class ZmqConnection(object):
     """
     Connection through ZeroMQ, wraps up ZeroMQ socket.
@@ -74,7 +75,6 @@ class ZmqConnection(object):
     :var queue: output message queue
     :vartype queue: deque
     """
-    implements(IReadDescriptor, IFileDescriptor)
 
     socketType = None
     allowLoopbackMulticast = False
