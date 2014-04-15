@@ -81,7 +81,7 @@ class ZmqREQConnection(ZmqConnection):
 
         :param message: message data
         """
-        msgId, _, msg = message[0], message[1], message[2:]
+        msgId, msg = message[0], message[2:]
         d = self._requests.pop(msgId)
         self._releaseId(msgId)
         d.callback(msg)
