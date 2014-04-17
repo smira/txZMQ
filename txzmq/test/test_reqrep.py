@@ -112,7 +112,7 @@ class ZmqReplyConnection(ZmqREPConnection):
         else:
             self.message_count += 1
             self.send(['master', 'event'])
-            for _ in xrange(2):
+            for _ in range(2):
                 reactor.callLater(0, self.send, ['master', 'event'])
 
 
@@ -149,7 +149,7 @@ class ZmqREQREPTwoFactoryConnectionTestCase(unittest.TestCase):
         self.factory1.shutdown()
 
     def test_start(self):
-        for _ in xrange(self.REQUEST_COUNT):
+        for _ in range(self.REQUEST_COUNT):
             reactor.callLater(0, self.c1.send, 'req')
         reactor.callLater(0, self.c1.send, 'stop')
 

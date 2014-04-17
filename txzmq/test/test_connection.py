@@ -98,12 +98,12 @@ class ZmqConnectionTestCase(unittest.TestCase):
             self.factory, ZmqEndpoint(ZmqEndpointType.connect,
                                       "tcp://127.0.0.1:5555"))
 
-        for i in xrange(100):
+        for i in range(100):
             s.send(str(i))
 
         def check(ignore):
             result = getattr(r, 'messages', [])
-            expected = map(lambda i: [str(i)], xrange(100))
+            expected = map(lambda i: [str(i)], range(100))
             self.failUnlessEqual(
                 result, expected, "Messages should have been received")
 

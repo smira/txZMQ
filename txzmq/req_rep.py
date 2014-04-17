@@ -44,7 +44,7 @@ class ZmqREQConnection(ZmqConnection):
         :rtype: str
         """
         if not self._uuids:
-            for _ in xrange(self.UUID_POOL_GEN_SIZE):
+            for _ in range(self.UUID_POOL_GEN_SIZE):
                 self._uuids.append(str(uuid.uuid4()))
         return self._uuids.pop()
 
