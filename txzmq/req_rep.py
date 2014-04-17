@@ -1,6 +1,8 @@
 """
 ZeroMQ REQ-REP wrappers.
 """
+from __future__ import unicode_literals
+
 import uuid
 import warnings
 
@@ -45,7 +47,7 @@ class ZmqREQConnection(ZmqConnection):
         """
         if not self._uuids:
             for _ in range(self.UUID_POOL_GEN_SIZE):
-                self._uuids.append(str(uuid.uuid4()))
+                self._uuids.append(bytes(uuid.uuid4()))
         return self._uuids.pop()
 
     def _releaseId(self, msgId):
@@ -70,7 +72,7 @@ class ZmqREQConnection(ZmqConnection):
         d = defer.Deferred()
         messageId = self._getNextId()
         self._requests[messageId] = d
-        self.send([messageId, ''] + list(messageParts))
+        self.send([messageId, b''] + list(messageParts))
         return d
 
     def messageReceived(self, message):
@@ -110,7 +112,7 @@ class ZmqREPConnection(ZmqConnection):
         :type message: str
         """
         routingInfo = self._routingInfo.pop(messageId)
-        self.send(routingInfo + [messageId, ''] + list(messageParts))
+        self.send(routingInfo + [messageId, b''] + list(messageParts))
 
     def messageReceived(self, message):
         """
@@ -118,7 +120,7 @@ class ZmqREPConnection(ZmqConnection):
 
         :param message: message data
         """
-        i = message.index('')
+        i = message.index(b'')
         assert i > 0
         (routingInfo, msgId, payload) = (
             message[:i - 1], message[i - 1], message[i + 1:])

@@ -1,6 +1,8 @@
 """
 ZeroMQ PUB-SUB wrappers.
 """
+from __future__ import unicode_literals
+
 from zmq import constants
 
 from txzmq.connection import ZmqConnection
@@ -21,7 +23,7 @@ class ZmqPubConnection(ZmqConnection):
         :param tag: message tag
         :type tag: str
         """
-        self.send(tag + '\0' + message)
+        self.send(tag + b'\0' + message)
 
 
 class ZmqSubConnection(ZmqConnection):
@@ -69,7 +71,7 @@ class ZmqSubConnection(ZmqConnection):
             # of multi-part message
             self.gotMessage(message[1], message[0])
         else:
-            self.gotMessage(*reversed(message[0].split('\0', 1)))
+            self.gotMessage(*reversed(message[0].split(b'\0', 1)))
 
     def gotMessage(self, message, tag):
         """
