@@ -8,7 +8,6 @@ Example txzmq client.
     examples/req_rep.py --method=bind --endpoint=ipc:///tmp/req_rep_sock --mode=rep
 """
 import os
-import socket
 import sys
 import time
 import zmq

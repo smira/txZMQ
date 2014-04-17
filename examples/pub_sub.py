@@ -12,7 +12,7 @@ import sys
 import time
 from optparse import OptionParser
 
-from twisted.internet import reactor, defer
+from twisted.internet import reactor
 
 rootdir = os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), '..'))
 sys.path.append(rootdir)
