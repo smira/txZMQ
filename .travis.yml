@@ -3,9 +3,7 @@ python:
     - 2.6
     - 2.7
     - 3.3
-    # comment out pypy until travis updates to pypy 2.0/2.1, cffi doesn't work
-    # on PyPy 1.9
-    # - pypy
+    - pypy
 env:
     - REACTOR=select
     - REACTOR=epoll
@@ -25,3 +23,4 @@ notifications:
 matrix:
     allow_failures:
         - python: 3.3
+        - python: pypy
