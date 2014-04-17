@@ -5,6 +5,8 @@ Trying simple REQ/REP interaction to verify that txZMQ works.
 
 Required for Python3 until Trial stats working.
 """
+from __future__ import print_function, unicode_literals
+
 import os
 import sys
 
@@ -25,7 +27,7 @@ rep = ZmqREPConnection(zf, ZmqEndpoint("bind", endpoint))
 
 
 def gotMessage(messageId, message):
-    rep.reply(messageId, "REP: " + message)
+    rep.reply(messageId, b"REP: " + message)
 
 rep.gotMessage = gotMessage
 exitCode = 0
@@ -33,18 +35,18 @@ exitCode = 0
 
 def start():
     def gotReply(reply):
-        if reply != ["REP: REQ1"]:
-            print "Unexpected reply: %r" % (reply, )
+        if reply != [b"REP: REQ1"]:
+            print("Unexpected reply: %r" % (reply, ))
 
             global exitCode
             exitCode = 1
             reactor.crash()
             return
 
-        print "OK"
+        print("OK")
         reactor.crash()
 
-    req.sendMsg("REQ1").addCallback(gotReply)
+    req.sendMsg(b"REQ1").addCallback(gotReply)
 
 reactor.callWhenRunning(reactor.callLater, 1, start)
 
