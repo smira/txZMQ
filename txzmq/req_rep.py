@@ -47,7 +47,7 @@ class ZmqREQConnection(ZmqConnection):
         """
         if not self._uuids:
             for _ in range(self.UUID_POOL_GEN_SIZE):
-                self._uuids.append(bytes(uuid.uuid4().hex))
+                self._uuids.append(uuid.uuid4().bytes)
         return self._uuids.pop()
 
     def _releaseId(self, msgId):
