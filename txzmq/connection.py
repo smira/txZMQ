@@ -87,6 +87,9 @@ class ZmqConnection(object):
     tcpKeepaliveIdle = 0
     tcpKeepaliveInterval = 0
 
+    reconnectInterval = 100
+    reconnectIntervalMax = 0
+
     def __init__(self, factory, endpoint=None, identity=None):
         """
         Constructor.
@@ -134,6 +137,14 @@ class ZmqConnection(object):
                 constants.TCP_KEEPALIVE_IDLE, self.tcpKeepaliveIdle)
             self.socket.set(
                 constants.TCP_KEEPALIVE_INTVL, self.tcpKeepaliveInterval)
+
+        if ZMQ3 and self.reconnectInterval:
+            self.socket.set(
+                constants.RECONNECT_IVL, self.reconnectInterval)
+
+        if ZMQ3 and self.reconnectIntervalMax:
+            self.socket.set(
+                constants.RECONNECT_IVL_MAX, self.reconnectIntervalMax)
 
         if self.identity is not None:
             self.socket.set(constants.IDENTITY, self.identity)
