@@ -64,6 +64,22 @@ class ZmqConnection(object):
     :var highWaterMark: hard limit on the maximum number of outstanding
         messages 0MQ shall queue in memory for any single peer
     :vartype highWaterMark: int
+    :var tcpKeepalive: if set to 1, enable TCP keepalive, otherwise leave
+        it as default
+    :vartype tcpKeepalive: int
+    :var tcpKeepaliveCount: override TCP_KEEPCNT socket option
+        (where supported by OS)
+    :vartype tcpKeepaliveCount: int
+    :var tcpKeepaliveIdle: override TCP_KEEPCNT(or TCP_KEEPALIVE
+        on some OS) socket option(where supported by OS).
+    :vartype tcpKeepaliveIdle: int
+    :var tcpKeepaliveInterval: override TCP_KEEPINTVL socket
+        option(where supported by OS)
+    :vartype tcpKeepaliveInterval: int
+    :var reconnectInterval: set reconnection interval
+    :vartype reconnectInterval: int
+    :var reconnectIntervalMax: set maximum reconnection interval
+    :vartype reconnectIntervalMax: int
     :var factory: ZeroMQ Twisted factory reference
     :vartype factory: :class:`ZmqFactory`
     :var socket: ZeroMQ Socket
