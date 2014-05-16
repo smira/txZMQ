@@ -101,6 +101,21 @@ class ZmqREQREPConnectionTestCase(unittest.TestCase):
 
         return self.s.sendMsg('aaa').addCallback(check)
 
+    def test_cancel(self):
+        d = self.s.sendMsg('aaa')
+        d.cancel()
+
+        def check_requests(_):
+            self.assertEqual(self.s._requests, {})
+            self.failUnlessEqual(self.s.UUID_POOL_GEN_SIZE,
+                                 len(self.s._uuids) + 1)
+
+        return d.addCallbacks(lambda _: self.fail("Should have errored"),
+                              lambda fail: fail.trap(
+                              "twisted.internet.defer.CancelledError")) \
+            .addCallback(check_requests) \
+            .addCallback(lambda _: _wait(0.01))
+
 
 class ZmqReplyConnection(ZmqREPConnection):
     def messageReceived(self, message):

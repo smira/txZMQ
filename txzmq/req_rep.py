@@ -61,6 +61,15 @@ class ZmqREQConnection(ZmqConnection):
         if len(self._uuids) > 2 * self.UUID_POOL_GEN_SIZE:
             self._uuids[-self.UUID_POOL_GEN_SIZE:] = []
 
+    def _cancel(self, msgId):
+        """
+        Cancel outstanding REQ, drop reply silently.
+
+        @param msgId: message ID to cancel
+        @type msgId: C{str}
+        """
+        self._requests.pop(msgId, None)
+
     def sendMsg(self, *messageParts):
         """
         Send request and deliver response back when available.
@@ -69,8 +78,8 @@ class ZmqREQConnection(ZmqConnection):
         :type messageParts: tuple
         :return: Deferred that will fire when response comes back
         """
-        d = defer.Deferred()
         messageId = self._getNextId()
+        d = defer.Deferred(canceller=lambda _: self._cancel(messageId))
         self._requests[messageId] = d
         self.send([messageId, b''] + list(messageParts))
         return d
@@ -84,8 +93,12 @@ class ZmqREQConnection(ZmqConnection):
         :param message: message data
         """
         msgId, msg = message[0], message[2:]
-        d = self._requests.pop(msgId)
         self._releaseId(msgId)
+        d = self._requests.pop(msgId, None)
+        if d is None:
+            # reply came for timed out or cancelled request, drop it silently
+            return
+
         d.callback(msg)
 
 
