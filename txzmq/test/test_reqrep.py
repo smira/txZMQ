@@ -7,7 +7,8 @@ from twisted.trial import unittest
 from txzmq.connection import ZmqEndpoint, ZmqEndpointType
 from txzmq.factory import ZmqFactory
 from txzmq.test import _wait
-from txzmq.req_rep import ZmqREPConnection, ZmqREQConnection
+from txzmq.req_rep import ZmqREPConnection, ZmqREQConnection, \
+    ZmqRequestTimeoutError
 
 
 class ZmqTestREPConnection(ZmqREPConnection):
@@ -16,6 +17,11 @@ class ZmqTestREPConnection(ZmqREPConnection):
             self.messages = []
         self.messages.append([messageId, messageParts])
         self.reply(messageId, *messageParts)
+
+
+class ZmqSlowREPConnection(ZmqREPConnection):
+    def gotMessage(self, messageId, *messageParts):
+        reactor.callLater(0.1, self.reply, messageId, *messageParts)
 
 
 class ZmqREQREPConnectionTestCase(unittest.TestCase):
@@ -115,6 +121,21 @@ class ZmqREQREPConnectionTestCase(unittest.TestCase):
                               "twisted.internet.defer.CancelledError")) \
             .addCallback(check_requests) \
             .addCallback(lambda _: _wait(0.01))
+
+    def test_send_timeout_ok(self):
+        return self.s.sendMsg('aaa', timeout=0.1) \
+            .addCallback(lambda response: self.assertEquals(response, ['aaa']))
+
+    def test_send_timeout_fail(self):
+        b = ZmqEndpoint(ZmqEndpointType.bind, "ipc://#4")
+        ZmqSlowREPConnection(self.factory, b)
+        c = ZmqEndpoint(ZmqEndpointType.connect, "ipc://#4")
+        s = ZmqREQConnection(self.factory, c, identity='client2')
+
+        return s.sendMsg('aaa', timeout=0.05) \
+            .addCallbacks(lambda _: self.fail("Should timeout"),
+                          lambda fail: fail.trap(ZmqRequestTimeoutError)) \
+            .addCallback(lambda _: _wait(0.1))
 
 
 class ZmqReplyConnection(ZmqREPConnection):

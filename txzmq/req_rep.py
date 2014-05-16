@@ -8,9 +8,15 @@ import warnings
 
 from zmq import constants
 
-from twisted.internet import defer
+from twisted.internet import defer, reactor
 
 from txzmq.connection import ZmqConnection
+
+
+class ZmqRequestTimeoutError(Exception):
+    """
+    Request has been timed out.
+    """
 
 
 class ZmqREQConnection(ZmqConnection):
@@ -23,8 +29,13 @@ class ZmqREQConnection(ZmqConnection):
     Socket mimics request-reply behavior by sending each message with unique
     uuid and recording Deferred associated with the message. When reply comes,
     it uses that Deferred to pass response back to the caller.
+
+    :var defaultRequestTimeout: default timeout for requests, disabled
+        by default (seconds)
+    :type defaultRequestTimeout: float
     """
     socketType = constants.DEALER
+    defaultRequestTimeout = None
 
     # the number of new UUIDs to generate when the pool runs out of them
     UUID_POOL_GEN_SIZE = 5
@@ -68,19 +79,42 @@ class ZmqREQConnection(ZmqConnection):
         @param msgId: message ID to cancel
         @type msgId: C{str}
         """
-        self._requests.pop(msgId, None)
+        self._requests.pop(msgId, (None, None))
 
-    def sendMsg(self, *messageParts):
+    def _timeoutRequest(self, msgId):
+        """
+        Cancel timedout request.
+        @param msgId: message ID to cancel
+        @type msgId: C{str}
+        """
+        d, _ = self._requests.pop(msgId, (None, None))
+        if not d.called:
+            d.errback(ZmqRequestTimeoutError(msgId))
+
+    def sendMsg(self, *messageParts, **kwargs):
         """
         Send request and deliver response back when available.
 
         :param messageParts: message data
         :type messageParts: tuple
+        :param timeout: as keyword argument, timeout on request
+        :type timeout: float
         :return: Deferred that will fire when response comes back
         """
         messageId = self._getNextId()
         d = defer.Deferred(canceller=lambda _: self._cancel(messageId))
-        self._requests[messageId] = d
+
+        timeout = kwargs.pop('timeout', None)
+        if timeout is None:
+            timeout = self.defaultRequestTimeout
+        assert len(kwargs) == 0, "Unsupported keyword argument"
+
+        canceller = None
+        if timeout is not None:
+            canceller = reactor.callLater(timeout, self._timeoutRequest,
+                                          messageId)
+
+        self._requests[messageId] = (d, canceller)
         self.send([messageId, b''] + list(messageParts))
         return d
 
@@ -94,7 +128,11 @@ class ZmqREQConnection(ZmqConnection):
         """
         msgId, msg = message[0], message[2:]
         self._releaseId(msgId)
-        d = self._requests.pop(msgId, None)
+        d, canceller = self._requests.pop(msgId, (None, None))
+
+        if canceller is not None and canceller.active():
+            canceller.cancel()
+
         if d is None:
             # reply came for timed out or cancelled request, drop it silently
             return

@@ -19,7 +19,7 @@ rootdir = os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), '..'))
 sys.path.insert(0, rootdir)
 os.chdir(rootdir)
 
-from txzmq import ZmqEndpoint, ZmqFactory, ZmqREQConnection, ZmqREPConnection
+from txzmq import ZmqEndpoint, ZmqFactory, ZmqREQConnection, ZmqREPConnection, ZmqRequestTimeoutError
 
 
 parser = OptionParser("")
@@ -42,12 +42,16 @@ if options.mode == "req":
 
         print "Requesting %r" % data
         try:
-            d = s.sendMsg(data)
+            d = s.sendMsg(data, timeout=0.95)
 
             def doPrint(reply):
                 print("Got reply: %s" % (reply))
 
-            d.addCallback(doPrint)
+            def onTimeout(fail):
+                fail.trap(ZmqRequestTimeoutError)
+                print "Timeout on request, is reply server running?"
+
+            d.addCallback(doPrint).addErrback(onTimeout)
 
         except zmq.error.Again:
             print "Skipping, no pull consumers..."
