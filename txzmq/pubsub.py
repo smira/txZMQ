@@ -14,7 +14,7 @@ class ZmqPubConnection(ZmqConnection):
     """
     socketType = constants.PUB
 
-    def publish(self, message, tag=''):
+    def publish(self, message, tag=b''):
         """
         Publish `message` with specified `tag`.
 
