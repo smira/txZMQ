@@ -159,8 +159,8 @@ class ZmqREPConnection(ZmqConnection):
 
         :param messageId: message uuid
         :type messageId: str
-        :param message: message data
-        :type message: str
+        :param messageParts: message data
+        :type messageParts: list
         """
         routingInfo = self._routingInfo.pop(messageId)
         self.send(routingInfo + [messageId, b''] + list(messageParts))
