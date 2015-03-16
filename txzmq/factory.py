@@ -58,7 +58,7 @@ class ZmqFactory(object):
         self.context = None
         if self.trigger:
             try:
-                reactor.removeSystemEventTrigger(self.trigger)
+                self.reactor.removeSystemEventTrigger(self.trigger)
             except Exception:
                 pass  # just ignore while triggered by the reactor
 
@@ -70,6 +70,6 @@ class ZmqFactory(object):
         It is recommended that this method is called on any
         created factory.
         """
-        self.trigger = reactor.addSystemEventTrigger(
+        self.trigger = self.reactor.addSystemEventTrigger(
             'during', 'shutdown', self.shutdown
         )
