@@ -9,9 +9,11 @@ from txzmq.factory import ZmqFactory
 
 from twisted.internet import reactor
 
+
 class ZmqReactorShutdownTestCase(unittest.TestCase):
     """
-    Test case for L{zmq.twisted.factory.Factory} automatic shutdown when the reactor is shutting down.
+    Test case for L{zmq.twisted.factory.Factory}
+    automatic shutdown when the reactor is shutting down.
     """
 
     def setUp(self):
@@ -21,4 +23,3 @@ class ZmqReactorShutdownTestCase(unittest.TestCase):
 
     def test_reactor_shutdown(self):
         reactor.stop()
-

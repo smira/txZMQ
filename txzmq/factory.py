@@ -60,7 +60,7 @@ class ZmqFactory(object):
             try:
                 reactor.removeSystemEventTrigger(self.trigger)
             except Exception:
-                pass # just ignore while triggered by the reactor
+                pass  # just ignore while triggered by the reactor
 
     def registerForShutdown(self):
         """
@@ -70,4 +70,6 @@ class ZmqFactory(object):
         It is recommended that this method is called on any
         created factory.
         """
-        self.trigger = reactor.addSystemEventTrigger('during', 'shutdown', self.shutdown)
+        self.trigger = reactor.addSystemEventTrigger(
+            'during', 'shutdown', self.shutdown
+        )
