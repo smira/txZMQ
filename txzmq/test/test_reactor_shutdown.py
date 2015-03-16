@@ -15,7 +15,7 @@ class ZmqReactorShutdownTestCase(ReactorBuilder):
 
     requiredInterfaces = (IReactorCore,)
 
-    def test_reactor_shutdown(self):
+    def test_reactor_and_factory_shutdown(self):
         reactor = self.buildReactor()
 
         def _test():
@@ -23,6 +23,17 @@ class ZmqReactorShutdownTestCase(ReactorBuilder):
             factory.reactor = reactor
             factory.registerForShutdown()
             factory.shutdown()
+            reactor.stop()
+        reactor.callWhenRunning(_test)
+        reactor.run()
+
+    def test_reactor_shutdown(self):
+        reactor = self.buildReactor()
+
+        def _test():
+            factory = ZmqFactory()
+            factory.reactor = reactor
+            factory.registerForShutdown()
             reactor.stop()
         reactor.callWhenRunning(_test)
         reactor.run()
