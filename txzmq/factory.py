@@ -59,7 +59,7 @@ class ZmqFactory(object):
         if self.trigger:
             try:
                 reactor.removeSystemEventTrigger(self.trigger)
-            except Exception,ex:
+            except Exception:
                 pass # just ignore while triggered by the reactor
 
     def registerForShutdown(self):
