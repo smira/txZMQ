@@ -25,5 +25,6 @@ class ZmqReactorShutdownTestCase(ReactorBuilder):
             factory.shutdown()
             reactor.stop()
         reactor.callWhenRunning(_test)
+        reactor.run()
 
 globals().update(ZmqReactorShutdownTestCase.makeTestCaseClasses())
