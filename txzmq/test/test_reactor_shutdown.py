@@ -3,8 +3,6 @@ Tests for L{txzmq.factory} automatic shutdown.
 
 The _z_ infix is used to have this test a last-called one.
 """
-from twisted.trial import unittest
-
 from txzmq.factory import ZmqFactory
 
 from twisted.internet.test.reactormixins import ReactorBuilder
