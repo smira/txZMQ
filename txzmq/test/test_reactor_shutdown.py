@@ -1,7 +1,5 @@
 """
 Tests for L{txzmq.factory} automatic shutdown.
-
-The _z_ infix is used to have this test a last-called one.
 """
 from txzmq.factory import ZmqFactory
 
