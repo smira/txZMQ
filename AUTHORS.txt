@@ -7,3 +7,4 @@
 * Ralph Bean <rbean@redhat.com>
 * Alexander Else
 * David J. Felix
+* Vsevolod Novikov
