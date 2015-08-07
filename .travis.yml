@@ -13,7 +13,9 @@ install:
     - sudo apt-get install libzmq3-dev
     - pip install -r requirements.txt --use-mirrors
 script:
-    - [ -f $VIRTUAL_ENV/bin/trial ] && coverage run $VIRTUAL_ENV/bin/trial --reactor=$REACTOR txzmq
+    - "[ -f $VIRTUAL_ENV/bin/trial ] && coverage run $VIRTUAL_ENV/bin/trial --reactor=$REACTOR txzmq"
+    - >-
+        [ -f $VIRTUAL_ENV/bin/trial ] && coverage run $VIRTUAL_ENV/bin/trial --reactor=$REACTOR txzmq
     - pep8 --repeat txzmq
     - pyflakes txzmq
     - python examples/integration_test.py
