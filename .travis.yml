@@ -3,7 +3,9 @@ python:
     - 2.6
     - 2.7
     - 3.3
+    - 3.4
     - pypy
+    - pypy3
 env:
     - REACTOR=select
     - REACTOR=epoll
@@ -22,5 +24,5 @@ notifications:
         - me@smira.ru
 matrix:
     allow_failures:
-        - python: 3.3
         - python: pypy
+        - python: pypy3
