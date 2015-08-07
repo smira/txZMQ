@@ -57,11 +57,11 @@ class ZmqConnectionTestCase(unittest.TestCase):
         s = ZmqTestSender(
             self.factory, ZmqEndpoint(ZmqEndpointType.connect, "inproc://#3"))
 
-        s.send('abcd')
+        s.send(b'abcd')
 
         def check(ignore):
             result = getattr(r, 'messages', [])
-            expected = [['abcd']]
+            expected = [[b'abcd']]
             self.failUnlessEqual(
                 result, expected, "Message should have been received")
 
@@ -80,11 +80,11 @@ class ZmqConnectionTestCase(unittest.TestCase):
         s = ZmqTestSender(
             self.factory, ZmqEndpoint(ZmqEndpointType.connect, "inproc://#1"))
 
-        s.send('abcd')
+        s.send(b'abcd')
 
         def check(ignore):
             result = getattr(r, 'messages', [])
-            expected = [['abcd']]
+            expected = [[b'abcd']]
             self.failUnlessEqual(
                 result, expected, "Message should have been received")
 
@@ -99,11 +99,11 @@ class ZmqConnectionTestCase(unittest.TestCase):
                                       "tcp://127.0.0.1:5555"))
 
         for i in range(100):
-            s.send(str(i))
+            s.send(str(i).encode())
 
         def check(ignore):
             result = getattr(r, 'messages', [])
-            expected = map(lambda i: [str(i)], range(100))
+            expected = [[str(i).encode()] for i in range(100)]
             self.failUnlessEqual(
                 result, expected, "Messages should have been received")
 
@@ -117,11 +117,11 @@ class ZmqConnectionTestCase(unittest.TestCase):
             self.factory, ZmqEndpoint(ZmqEndpointType.connect,
                                       "tcp://127.0.0.1:5555"))
 
-        s.send(["0" * 10000, "1" * 10000])
+        s.send([b'0' * 10000, b'1' * 10000])
 
         def check(ignore):
             result = getattr(r, 'messages', [])
-            expected = [["0" * 10000, "1" * 10000]]
+            expected = [[b'0' * 10000, b'1' * 10000]]
             self.failUnlessEqual(
                 result, expected, "Messages should have been received")
 
