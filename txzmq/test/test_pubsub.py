@@ -65,16 +65,16 @@ class ZmqConnectionTestCase(unittest.TestCase):
             self.factory, ZmqEndpoint(ZmqEndpointType.connect,
                                       "ipc://test-sock"))
 
-        r.subscribe('tag')
+        r.subscribe(b'tag')
 
         def publish(ignore):
-            s.publish('xyz', 'different-tag')
-            s.publish('abcd', 'tag1')
-            s.publish('efgh', 'tag2')
+            s.publish(b'xyz', b'different-tag')
+            s.publish(b'abcd', b'tag1')
+            s.publish(b'efgh', b'tag2')
 
         def check(ignore):
             result = getattr(r, 'messages', [])
-            expected = [['tag1', 'abcd'], ['tag2', 'efgh']]
+            expected = [[b'tag1', b'abcd'], [b'tag2', b'efgh']]
             self.failUnlessEqual(
                 result, expected, "Message should have been received")
 
@@ -88,15 +88,15 @@ class ZmqConnectionTestCase(unittest.TestCase):
         s = ZmqPubConnection(self.factory, ZmqEndpoint(
             ZmqEndpointType.connect, "epgm://127.0.0.1;239.192.1.1:5556"))
 
-        r.subscribe('tag')
+        r.subscribe(b'tag')
 
         def publish(ignore):
-            s.publish('xyz', 'different-tag')
-            s.publish('abcd', 'tag1')
+            s.publish(b'xyz', b'different-tag')
+            s.publish(b'abcd', b'tag1')
 
         def check(ignore):
             result = getattr(r, 'messages', [])
-            expected = [['tag1', 'abcd']]
+            expected = [[b'tag1', b'abcd']]
             self.failUnlessEqual(
                 result, expected, "Message should have been received")
 
@@ -116,15 +116,15 @@ class ZmqConnectionTestCase(unittest.TestCase):
             self.factory,
             ZmqEndpoint(ZmqEndpointType.connect, "inproc://endpoint"))
 
-        r.subscribe('')
+        r.subscribe(b'')
 
         def publish(ignore):
-            s1.publish('111', 'tag1')
-            s2.publish('222', 'tag2')
+            s1.publish(b'111', b'tag1')
+            s2.publish(b'222', b'tag2')
 
         def check(ignore):
             result = getattr(r, 'messages', [])
-            expected = [['tag1', '111'], ['tag2', '222']]
+            expected = [[b'tag1', b'111'], [b'tag2', b'222']]
             self.failUnlessEqual(
                 sorted(result), expected, "Message should have been received")
 

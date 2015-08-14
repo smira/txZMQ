@@ -13,6 +13,9 @@ from twisted.internet.interfaces import IFileDescriptor, IReadDescriptor
 from twisted.python import log
 
 from zmq import zmq_version_info
+
+from txzmq.compat import is_nonstr_iter
+
 ZMQ3 = zmq_version_info()[0] >= 3
 
 
@@ -305,7 +308,7 @@ class ZmqConnection(object):
             message) or just str
         :type message: str or list of str
         """
-        if not hasattr(message, '__iter__'):
+        if not is_nonstr_iter(message):
             self.socket.send(message, constants.NOBLOCK)
         else:
             for m in message[:-1]:

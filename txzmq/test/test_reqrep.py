@@ -9,6 +9,7 @@ from txzmq.factory import ZmqFactory
 from txzmq.test import _wait
 from txzmq.req_rep import ZmqREPConnection, ZmqREQConnection, \
     ZmqRequestTimeoutError
+from txzmq.compat import binary_string_type
 
 
 class ZmqTestREPConnection(ZmqREPConnection):
@@ -34,7 +35,7 @@ class ZmqREQREPConnectionTestCase(unittest.TestCase):
         b = ZmqEndpoint(ZmqEndpointType.bind, "ipc://#3")
         self.r = ZmqTestREPConnection(self.factory, b)
         c = ZmqEndpoint(ZmqEndpointType.connect, "ipc://#3")
-        self.s = ZmqREQConnection(self.factory, c, identity='client')
+        self.s = ZmqREQConnection(self.factory, c, identity=b'client')
 
     def tearDown(self):
         self.factory.shutdown()
@@ -43,10 +44,10 @@ class ZmqREQREPConnectionTestCase(unittest.TestCase):
         self.failUnlessEqual([], self.s._uuids)
         id1 = self.s._getNextId()
         self.failUnlessEqual(self.s.UUID_POOL_GEN_SIZE - 1, len(self.s._uuids))
-        self.failUnlessIsInstance(id1, str)
+        self.failUnlessIsInstance(id1, binary_string_type)
 
         id2 = self.s._getNextId()
-        self.failUnlessIsInstance(id2, str)
+        self.failUnlessIsInstance(id2, binary_string_type)
 
         self.failIfEqual(id1, id2)
 
@@ -62,26 +63,27 @@ class ZmqREQREPConnectionTestCase(unittest.TestCase):
 
         def get_next_id():
             self.count += 1
-            return 'msg_id_%d' % (self.count,)
+            return b'msg_id_' + str(self.count).encode()
 
         self.s._getNextId = get_next_id
 
-        self.s.sendMsg('aaa', 'aab')
-        self.s.sendMsg('bbb')
+        self.s.sendMsg(b'aaa', b'aab')
+        self.s.sendMsg(b'bbb')
 
         def check(ignore):
             result = getattr(self.r, 'messages', [])
-            expected = [['msg_id_1', ('aaa', 'aab')], ['msg_id_2', ('bbb',)]]
+            expected = [[b'msg_id_1', (b'aaa', b'aab')],
+                        [b'msg_id_2', (b'bbb',)]]
             self.failUnlessEqual(
                 result, expected, "Message should have been received")
 
         return _wait(0.01).addCallback(check)
 
     def test_send_recv_reply(self):
-        d = self.s.sendMsg('aaa')
+        d = self.s.sendMsg(b'aaa')
 
         def check_response(response):
-            self.assertEqual(response, ['aaa'])
+            self.assertEqual(response, [b'aaa'])
 
         d.addCallback(check_response)
         return d
@@ -90,10 +92,10 @@ class ZmqREQREPConnectionTestCase(unittest.TestCase):
         deferreds = []
         for i in range(10):
             msg_id = "msg_id_%d" % (i,)
-            d = self.s.sendMsg('aaa')
+            d = self.s.sendMsg(b'aaa')
 
             def check_response(response, msg_id):
-                self.assertEqual(response, ['aaa'])
+                self.assertEqual(response, [b'aaa'])
 
             d.addCallback(check_response, msg_id)
             deferreds.append(d)
@@ -105,10 +107,10 @@ class ZmqREQREPConnectionTestCase(unittest.TestCase):
             self.assertEqual(self.s._requests, {})
             self.failUnlessEqual(self.s.UUID_POOL_GEN_SIZE, len(self.s._uuids))
 
-        return self.s.sendMsg('aaa').addCallback(check)
+        return self.s.sendMsg(b'aaa').addCallback(check)
 
     def test_cancel(self):
-        d = self.s.sendMsg('aaa')
+        d = self.s.sendMsg(b'aaa')
         d.cancel()
 
         def check_requests(_):
@@ -123,16 +125,17 @@ class ZmqREQREPConnectionTestCase(unittest.TestCase):
             .addCallback(lambda _: _wait(0.01))
 
     def test_send_timeout_ok(self):
-        return self.s.sendMsg('aaa', timeout=0.1) \
-            .addCallback(lambda response: self.assertEquals(response, ['aaa']))
+        return self.s.sendMsg(b'aaa', timeout=0.1).addCallback(
+            lambda response: self.assertEquals(response, [b'aaa'])
+        )
 
     def test_send_timeout_fail(self):
         b = ZmqEndpoint(ZmqEndpointType.bind, "ipc://#4")
         ZmqSlowREPConnection(self.factory, b)
         c = ZmqEndpoint(ZmqEndpointType.connect, "ipc://#4")
-        s = ZmqREQConnection(self.factory, c, identity='client2')
+        s = ZmqREQConnection(self.factory, c, identity=b'client2')
 
-        return s.sendMsg('aaa', timeout=0.05) \
+        return s.sendMsg(b'aaa', timeout=0.05) \
             .addCallbacks(lambda _: self.fail("Should timeout"),
                           lambda fail: fail.trap(ZmqRequestTimeoutError)) \
             .addCallback(lambda _: _wait(0.1))
@@ -143,22 +146,22 @@ class ZmqReplyConnection(ZmqREPConnection):
         if not hasattr(self, 'message_count'):
             self.message_count = 0
 
-        if message[1] == 'stop':
-            reactor.callLater(0, self.send, ['master', 'exit'])
+        if message[1] == b'stop':
+            reactor.callLater(0, self.send, [b'master', b'exit'])
         else:
             self.message_count += 1
-            self.send(['master', 'event'])
+            self.send([b'master', b'event'])
             for _ in range(2):
-                reactor.callLater(0, self.send, ['master', 'event'])
+                reactor.callLater(0, self.send, [b'master', b'event'])
 
 
 class ZmqRequestConnection(ZmqREQConnection):
     def messageReceived(self, message):
         if not hasattr(self, 'message_count'):
             self.message_count = 0
-        if message[0] == 'event':
+        if message[0] == b'event':
             self.message_count += 1
-        elif message[0] == 'exit':
+        elif message[0] == b'exit':
             self.d.callback(None)
         else:
             assert False
@@ -175,9 +178,9 @@ class ZmqREQREPTwoFactoryConnectionTestCase(unittest.TestCase):
         self.factory1 = ZmqFactory()
         self.factory2 = ZmqFactory()
         c = ZmqEndpoint(ZmqEndpointType.connect, "tcp://127.0.0.1:7859")
-        self.c1 = ZmqRequestConnection(self.factory1, c, identity='master')
+        self.c1 = ZmqRequestConnection(self.factory1, c, identity=b'master')
         b = ZmqEndpoint(ZmqEndpointType.bind, "tcp://127.0.0.1:7859")
-        self.c2 = ZmqReplyConnection(self.factory2, b, identity='slave')
+        self.c2 = ZmqReplyConnection(self.factory2, b, identity=b'slave')
         self.c1.d = defer.Deferred()
 
     def tearDown(self):
@@ -186,8 +189,8 @@ class ZmqREQREPTwoFactoryConnectionTestCase(unittest.TestCase):
 
     def test_start(self):
         for _ in range(self.REQUEST_COUNT):
-            reactor.callLater(0, self.c1.send, 'req')
-        reactor.callLater(0, self.c1.send, 'stop')
+            reactor.callLater(0, self.c1.send, b'req')
+        reactor.callLater(0, self.c1.send, b'stop')
 
         def checkResults(_):
             self.failUnlessEqual(self.c1.message_count, 3 * self.REQUEST_COUNT)

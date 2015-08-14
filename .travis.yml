@@ -4,7 +4,9 @@ python:
     - 2.6
     - 2.7
     - 3.3
+    - 3.4
     - pypy
+    - pypy3
 env:
     - REACTOR=select
     - REACTOR=epoll
@@ -15,7 +17,10 @@ addons:
 install:
     - pip install -r requirements.txt
 script:
-    - coverage run $VIRTUAL_ENV/bin/trial --reactor=$REACTOR txzmq
+    - >-
+        [ ! -f $VIRTUAL_ENV/bin/trial ] || coverage run $VIRTUAL_ENV/bin/trial --reactor=$REACTOR txzmq
+    - >-
+        [ -f $VIRTUAL_ENV/bin/trial ] || nosetests
     - pep8 --repeat txzmq
     - pyflakes txzmq
     - python examples/integration_test.py
@@ -26,5 +31,5 @@ notifications:
         - me@smira.ru
 matrix:
     allow_failures:
-        - python: 3.3
         - python: pypy
+        - python: pypy3

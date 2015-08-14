@@ -13,24 +13,24 @@ class ZmqTestRouterConnection(ZmqRouterConnection):
     message_count = 0
 
     def gotMessage(self, senderId, message):
-        assert senderId == 'dealer'
+        assert senderId == b'dealer'
 
-        if message == 'stop':
-            reactor.callLater(0, self.sendMsg, 'dealer', 'exit')
+        if message == b'stop':
+            reactor.callLater(0, self.sendMsg, b'dealer', b'exit')
         else:
             self.message_count += 1
-            self.sendMsg('dealer', 'event')
+            self.sendMsg(b'dealer', b'event')
             for _ in range(2):
-                reactor.callLater(0, self.sendMsg, 'dealer', 'event')
+                reactor.callLater(0, self.sendMsg, b'dealer', b'event')
 
 
 class ZmqTestDealerConnection(ZmqDealerConnection):
     message_count = 0
 
     def gotMessage(self, message):
-        if message == 'event':
+        if message == b'event':
             self.message_count += 1
-        elif message == 'exit':
+        elif message == b'exit':
             self.d.callback(None)
         else:
             assert False, "received unexpected message: %r" % (message,)
@@ -47,13 +47,13 @@ class ZmqRouterDealerTwoFactoryConnectionTestCase(unittest.TestCase):
         self.factory1 = ZmqFactory()
         dealer_endpoint = ZmqEndpoint(ZmqEndpointType.connect, "ipc://#7")
         self.dealer = ZmqTestDealerConnection(self.factory1, dealer_endpoint,
-                                              identity='dealer')
+                                              identity=b'dealer')
         self.dealer.d = defer.Deferred()
 
         self.factory2 = ZmqFactory()
         router_endpoint = ZmqEndpoint(ZmqEndpointType.bind, "ipc://#7")
         self.router = ZmqTestRouterConnection(self.factory2, router_endpoint,
-                                              identity='router')
+                                              identity=b'router')
 
     def tearDown(self):
         self.factory2.shutdown()
@@ -61,8 +61,8 @@ class ZmqRouterDealerTwoFactoryConnectionTestCase(unittest.TestCase):
 
     def test_start(self):
         for _ in range(self.REQUEST_COUNT):
-            reactor.callLater(0, self.dealer.sendMsg, 'req')
-        reactor.callLater(0, self.dealer.sendMsg, 'stop')
+            reactor.callLater(0, self.dealer.sendMsg, b'req')
+        reactor.callLater(0, self.dealer.sendMsg, b'stop')
 
         def checkResults(_):
             self.failUnlessEqual(self.dealer.message_count,
