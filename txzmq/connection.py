@@ -267,9 +267,8 @@ class ZmqConnection(object):
                 self.read_scheduled.cancel()
             self.read_scheduled = None
         if self._read_loop is None:
-            self._read_loop = task.cooperate(self._read_messages()).\
-                whenDone().\
-                addBoth(self._read_done)
+            self._read_loop = task.cooperate(self._read_messages())
+            self._read_loop.whenDone().addBoth(self._read_done)
 
     def _read_messages(self):
         while True:
