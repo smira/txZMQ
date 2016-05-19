@@ -206,6 +206,8 @@ class ZmqConnection(object):
         if self.read_scheduled is not None:
             self.read_scheduled.cancel()
             self.read_scheduled = None
+        if self._read_loop is not None:
+            self._read_loop.stop()
 
     def __repr__(self):
         return "%s(%r, %r)" % (
