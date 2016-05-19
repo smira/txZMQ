@@ -282,9 +282,8 @@ class ZmqConnection(object):
             try:
                 message = self._readMultipart()
             except error.ZMQError as e:
-                if e.errno == constants.EAGAIN:
-                    pass
-                raise
+                if e.errno != constants.EAGAIN:
+                    raise
             else:
                 log.callWithLogger(self, self.messageReceived, message)
             yield
