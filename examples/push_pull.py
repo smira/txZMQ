@@ -3,10 +3,10 @@
 """
 Example txzmq client.
 
-    examples/push_pull.py --method=connect --endpoint=ipc:///tmp/sock
+    examples/push_pull.py --method=bind --endpoint=ipc:///tmp/sock
     --mode=push
 
-    examples/push_pull.py --method=bind --endpoint=ipc:///tmp/sock
+    examples/push_pull.py --method=connect --endpoint=ipc:///tmp/sock
     --mode=pull
 """
 import os
