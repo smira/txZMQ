@@ -40,11 +40,15 @@ def start():
 
             global exitCode
             exitCode = 1
-            reactor.crash()
+            req.shutdown()
+            rep.shutdown()
+            reactor.callLater(0, reactor.stop)
             return
 
         print("OK")
-        reactor.crash()
+        req.shutdown()
+        rep.shutdown()
+        reactor.callLater(0, reactor.stop)
 
     req.sendMsg(b"REQ1").addCallback(gotReply)
 
