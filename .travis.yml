@@ -1,10 +1,9 @@
 language: python
 sudo: false
 python:
-    - 2.6
     - 2.7
-    - 3.3
     - 3.4
+    - 3.5
     - pypy
     - pypy3
 env:
@@ -18,9 +17,9 @@ install:
     - pip install -r requirements.txt
 script:
     - >-
-        [ ! -f $VIRTUAL_ENV/bin/trial ] || coverage run $VIRTUAL_ENV/bin/trial --reactor=$REACTOR txzmq
+        [ ! -f $VIRTUAL_ENV/bin/trial ] || PYTHONPATH=. coverage run $VIRTUAL_ENV/bin/trial --reactor=$REACTOR txzmq
     - >-
-        [ -f $VIRTUAL_ENV/bin/trial ] || nosetests
+        [ -f $VIRTUAL_ENV/bin/trial ] || PYTHONPATH=. nosetests
     - pep8 --repeat txzmq
     - pyflakes txzmq
     - python examples/integration_test.py
