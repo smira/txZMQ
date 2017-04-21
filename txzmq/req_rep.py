@@ -79,7 +79,10 @@ class ZmqREQConnection(ZmqConnection):
         @param msgId: message ID to cancel
         @type msgId: C{str}
         """
-        self._requests.pop(msgId, (None, None))
+        _, canceller = self._requests.pop(msgId, (None, None))
+
+        if canceller is not None and canceller.active():
+            canceller.cancel()
 
     def _timeoutRequest(self, msgId):
         """
