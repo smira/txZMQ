@@ -125,7 +125,7 @@ class ZmqREQREPConnectionTestCase(unittest.TestCase):
             .addCallback(lambda _: _wait(0.01))
 
     def test_cancel_with_timeout(self):
-        d = self.s.sendMsg(b'aaa', timeout = 10.0)
+        d = self.s.sendMsg(b'aaa', timeout=10.0)
         d.cancel()
 
         def check_requests(_):
