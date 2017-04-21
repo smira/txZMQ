@@ -124,6 +124,21 @@ class ZmqREQREPConnectionTestCase(unittest.TestCase):
             .addCallback(check_requests) \
             .addCallback(lambda _: _wait(0.01))
 
+    def test_cancel_with_timeout(self):
+        d = self.s.sendMsg(b'aaa', timeout=10.0)
+        d.cancel()
+
+        def check_requests(_):
+            self.assertEqual(self.s._requests, {})
+            self.failUnlessEqual(self.s.UUID_POOL_GEN_SIZE,
+                                 len(self.s._uuids) + 1)
+
+        return d.addCallbacks(lambda _: self.fail("Should have errored"),
+                              lambda fail: fail.trap(
+                              "twisted.internet.defer.CancelledError")) \
+            .addCallback(check_requests) \
+            .addCallback(lambda _: _wait(0.01))
+
     def test_send_timeout_ok(self):
         return self.s.sendMsg(b'aaa', timeout=0.1).addCallback(
             lambda response: self.assertEquals(response, [b'aaa'])
