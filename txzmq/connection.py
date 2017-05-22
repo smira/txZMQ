@@ -8,7 +8,7 @@ from zmq import Socket
 
 from zope.interface import implementer
 
-from twisted.internet import reactor
+from twisted.internet import reactor, task
 from twisted.internet.interfaces import IFileDescriptor, IReadDescriptor
 from twisted.python import log
 
@@ -171,6 +171,7 @@ class ZmqConnection(object):
         if endpoint:
             self.addEndpoints([endpoint])
 
+        self._read_loop = None
         self.factory.connections.add(self)
 
         self.factory.reactor.addReader(self)
@@ -205,6 +206,8 @@ class ZmqConnection(object):
         if self.read_scheduled is not None:
             self.read_scheduled.cancel()
             self.read_scheduled = None
+        if self._read_loop is not None:
+            self._read_loop.stop()
 
     def __repr__(self):
         return "%s(%r, %r)" % (
@@ -263,7 +266,11 @@ class ZmqConnection(object):
             if not self.read_scheduled.called:
                 self.read_scheduled.cancel()
             self.read_scheduled = None
+        if self._read_loop is None:
+            self._read_loop = task.cooperate(self._read_messages())
+            self._read_loop.whenDone().addBoth(self._read_done)
 
+    def _read_messages(self):
         while True:
             if self.factory is None:  # disconnected
                 return
@@ -276,12 +283,14 @@ class ZmqConnection(object):
             try:
                 message = self._readMultipart()
             except error.ZMQError as e:
-                if e.errno == constants.EAGAIN:
-                    continue
+                if e.errno != constants.EAGAIN:
+                    raise
+            else:
+                log.callWithLogger(self, self.messageReceived, message)
+            yield
 
-                raise e
-
-            log.callWithLogger(self, self.messageReceived, message)
+    def _read_done(self, _):
+        self._read_loop = None
 
     def logPrefix(self):
         """

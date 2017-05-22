@@ -55,4 +55,4 @@ def start():
 reactor.callWhenRunning(reactor.callLater, 1, start)
 
 reactor.run()
-sys.exit(exitCode)
+os._exit(exitCode)
