@@ -1,5 +1,5 @@
 Name:             python-txzmq
-Version:          0.3.1
+Version:          0.8.1
 Release:          1%{?dist}
 Summary:          Twisted bindings for ZeroMQ
 
