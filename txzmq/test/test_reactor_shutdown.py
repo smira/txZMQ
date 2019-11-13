@@ -38,4 +38,5 @@ class ZmqReactorShutdownTestCase(ReactorBuilder):
         reactor.callWhenRunning(_test)
         reactor.run()
 
+
 globals().update(ZmqReactorShutdownTestCase.makeTestCaseClasses())

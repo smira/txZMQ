@@ -15,7 +15,7 @@ env:
 env-clean: clean env
 
 check: env
-	env/bin/pep8 --repeat txzmq
+	env/bin/pycodestyle --repeat txzmq
 	env/bin/pyflakes txzmq
 
 check-clean: clean check
