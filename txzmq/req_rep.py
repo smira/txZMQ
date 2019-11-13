@@ -41,9 +41,10 @@ class ZmqREQConnection(ZmqConnection):
     UUID_POOL_GEN_SIZE = 5
 
     def __init__(self, *args, **kwargs):
-        ZmqConnection.__init__(self, *args, **kwargs)
         self._requests = {}
         self._uuids = []
+
+        ZmqConnection.__init__(self, *args, **kwargs)
 
     def _getNextId(self):
         """
@@ -209,7 +210,7 @@ class ZmqXREPConnection(ZmqREPConnection):
                       "either ZmqREPConnection or ZmqROUTERConnection",
                       DeprecationWarning)
         ZmqREPConnection.__init__(self, factory)
-        self.add_endpoints(endpoints)
+        self.addEndpoints(endpoints)
 
 
 class ZmqXREQConnection(ZmqREQConnection):
@@ -225,4 +226,4 @@ class ZmqXREQConnection(ZmqREQConnection):
                       "either ZmqREQConnection or ZmqDEALERConnection",
                       DeprecationWarning)
         ZmqREQConnection.__init__(self, factory)
-        self.add_endpoints(endpoints)
+        self.addEndpoints(endpoints)

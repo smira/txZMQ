@@ -1,7 +1,8 @@
 Twisted
+service_identity
 pyzmq>=13
 pyflakes
-pep8
+pycodestyle
 Sphinx
 coverage
 coveralls
