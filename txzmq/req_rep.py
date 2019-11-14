@@ -154,8 +154,9 @@ class ZmqREPConnection(ZmqConnection):
     socketType = constants.ROUTER
 
     def __init__(self, *args, **kwargs):
-        ZmqConnection.__init__(self, *args, **kwargs)
         self._routingInfo = {}  # keep track of routing info
+
+        ZmqConnection.__init__(self, *args, **kwargs)
 
     def reply(self, messageId, *messageParts):
         """
