@@ -1,5 +1,6 @@
 [run]
 source = txzmq
+relative_files = True
 
 [report]
 omit =
