@@ -1,12 +1,12 @@
 Name:             python-txzmq
-Version:          0.8.2
+Version:          1.0.0 
 Release:          1%{?dist}
 Summary:          Twisted bindings for ZeroMQ
 
 Group:            Development/Languages
-License:          GPLv2
+License:          MPLv2
 URL:              http://pypi.python.org/pypi/txZMQ
-Source0:          http://pypi.python.org/packages/source/t/txZMQ/txZMQ-0.3.1.tar.gz
+Source0:          http://pypi.python.org/packages/source/t/txZMQ/txZMQ-1.0.0.tar.gz
 
 BuildArch:        noarch
 
