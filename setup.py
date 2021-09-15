@@ -1,12 +1,12 @@
 import io
 
-from distutils.core import setup
+from setuptools import setup
 
 setup(
     name='txZMQ',
     version=io.open('VERSION', encoding='utf-8').read().strip(),
     packages=['txzmq', 'txzmq.test'],
-    license='GPLv2',
+    license='MPLv2',
     author='Andrey Smirnov',
     author_email='me@smira.ru',
     url='https://github.com/smira/txZMQ',
@@ -14,7 +14,7 @@ setup(
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+        "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
         "Programming Language :: Python",
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 3",

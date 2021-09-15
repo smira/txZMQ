@@ -1,9 +1,6 @@
 Twisted bindings for 0MQ
 ========================
 
-.. image:: https://travis-ci.org/smira/txZMQ.png?branch=master
-    :target: https://travis-ci.org/smira/txZMQ
-
 .. image:: https://coveralls.io/repos/smira/txZMQ/badge.png
     :target: https://coveralls.io/r/smira/txZMQ
 
@@ -18,8 +15,7 @@ Twisted event loop (reactor).
 
 txZMQ supports both CPython and PyPy and ØMQ library version 2.2.x or 3.2.x.
 
-Documentation is available at `ReadTheDocs <http://txzmq.readthedocs.org>`_ and
-CI is done by `Travis CI <https://travis-ci.org/smira/txZMQ>`_.
+Documentation is available at `ReadTheDocs <http://txzmq.readthedocs.org>`_.
 
 
 Requirements
