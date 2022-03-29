@@ -66,6 +66,7 @@ class ZmqConnection(object):
     :vartype multicastRate: int
     :var highWaterMark: hard limit on the maximum number of outstanding
         messages 0MQ shall queue in memory for any single peer
+    :var topicSep: bytes
     :vartype highWaterMark: int
     :var tcpKeepalive: if set to 1, enable TCP keepalive, otherwise leave
         it as default
@@ -99,6 +100,7 @@ class ZmqConnection(object):
     allowLoopbackMulticast = False
     multicastRate = 100
     highWaterMark = 0
+    topicSep = b'\0'
 
     # Only supported by zeromq3 and pyzmq>=2.2.0.1
     tcpKeepalive = 0
