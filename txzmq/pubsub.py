@@ -79,7 +79,7 @@ class ZmqSubConnection(ZmqConnection):
 
     def gotMessage(self, message, tag):
         """
-        Called on incoming message recevied by subscriber.
+        Called on incoming message received by subscriber.
 
         Should be overridden to handle incoming messages.
 
