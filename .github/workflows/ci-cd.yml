@@ -91,13 +91,12 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt install -y libzmq3-dev
-          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
-          make env-clean
+          pip install .[dev]
       - name: Test with reactor ${{ matrix.reactor }}
         env:
           REACTOR: ${{ matrix.reactor }}
         run: |
-          make test
+          trial --reactor=${{ matrix.reactor }} txzmq
       - name: Lint
         run: |
           pycodestyle --repeat txzmq
