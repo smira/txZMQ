@@ -23,7 +23,11 @@ class ZmqPubConnection(ZmqConnection):
         :param tag: message tag
         :type tag: str
         """
-        self.send(tag + b'\0' + message)
+        if isinstance(tag, str):
+            tag = tag.encode()
+        if isinstance(message, str):
+            message = message.encode()
+        self.send(tag + self.topicSep + message)
 
 
 class ZmqSubConnection(ZmqConnection):
@@ -44,7 +48,7 @@ class ZmqSubConnection(ZmqConnection):
         :param tag: message tag
         :type tag: str
         """
-        self.socket.set(constants.SUBSCRIBE, tag)
+        self.socket.setsockopt(constants.SUBSCRIBE, tag)
 
     def unsubscribe(self, tag):
         """
@@ -55,7 +59,7 @@ class ZmqSubConnection(ZmqConnection):
         :param tag: message tag
         :type tag: str
         """
-        self.socket.set(constants.UNSUBSCRIBE, tag)
+        self.socket.setsockopt(constants.UNSUBSCRIBE, tag)
 
     def messageReceived(self, message):
         """
@@ -71,7 +75,7 @@ class ZmqSubConnection(ZmqConnection):
             # of multi-part message
             self.gotMessage(message[1], message[0])
         else:
-            self.gotMessage(*reversed(message[0].split(b'\0', 1)))
+            self.gotMessage(*reversed(message[0].split(self.topicSep, 1)))
 
     def gotMessage(self, message, tag):
         """

@@ -1,14 +1,16 @@
 Twisted bindings for 0MQ
 ========================
 
-.. image:: https://coveralls.io/repos/smira/txZMQ/badge.png
-    :target: https://coveralls.io/r/smira/txZMQ
-
-.. image:: https://badge.fury.io/py/txZMQ.svg
-    :target: https://badge.fury.io/py/txZMQ
+![python versions](https://img.shields.io/pypi/pyversions/txZMQ-ng.svg)
+![version](https://img.shields.io/pypi/v/txZMQ-ng)
+![license](https://img.shields.io/pypi/l/txZMQ-ng)
+![downloads](https://img.shields.io/pypi/dw/txZMQ-ng)
 
 Introduction
 ------------
+
+This is a fork of the original project at https://github.com/smira/txZMQ,
+since it is no longer maintained.
 
 txZMQ allows to integrate easily `ØMQ <http://zeromq.org>`_ sockets into
 Twisted event loop (reactor).

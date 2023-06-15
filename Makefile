@@ -9,8 +9,8 @@ clean:
 	find ./ -name "*.pyo" -exec rm {} \;
 
 env:
-	$(VIRTUALENV) --no-site-packages env/
-	env/bin/pip install -r requirements.txt --use-mirrors
+	$(VIRTUALENV) env/
+	env/bin/pip install -r requirements-dev.txt
 
 env-clean: clean env
 
