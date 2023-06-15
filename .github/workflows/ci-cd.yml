@@ -65,16 +65,14 @@ jobs:
           - "3.9"
           - "3.10"
           - "3.11"
-          - "pypy-2.7"
-          - "pypy-3.7"
           - "pypy3.9"
         reactor:
           - "select"
           - "epoll"
         experimental: [ false ]
-        include:
-          - python-version: "~3.12.0-0"
-            experimental: true
+#        include:
+#          - python-version: "~3.12.0-0"
+#            experimental: true
     steps:
       - name: Checkout the source code
         uses: actions/checkout@v3
