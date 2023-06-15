@@ -9,3 +9,4 @@
 * David J. Felix
 * Vsevolod Novikov
 * Tim Tisdall
+* William Barnhart <williambbarnhart@gmail.com>
