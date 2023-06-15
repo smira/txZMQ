@@ -81,6 +81,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt install -y libzmq3-dev
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
           make env-clean
       - name: Test with reactor ${{ matrix.reactor }}
         env:

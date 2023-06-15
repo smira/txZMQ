@@ -6,3 +6,4 @@ pycodestyle
 Sphinx
 coverage
 coveralls
+virtualenv
